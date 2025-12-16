@@ -50,7 +50,7 @@ func BLE_Scanner() {
 		fmt.Println("Addr: ", addr)
 		fmt.Println("RSSi: ", rssi)
 		fmt.Println("uuid: ", uuid)
-		fmt.Println("Manufacturer: ", manuf[0])
+		fmt.Println("Manufacturer: ", manuf)
 
 
 
@@ -85,11 +85,14 @@ func BLE_Scanner() {
 
 
 func Main(){
+
 	go BLE_Scanner()
+
+	fmt.Println("[*] Thread 1 Started")
 
 
 	<-time.After(5 * time.Second)
 	adapter.StopScan()
 	println("[-] Terminated BLE Scan!")
-	//println("Total Devices Found: ", len(BLE_Scanner().devices))
+	//println("Total Devices Found: ", len(BLE_Scanner.devices))
 }
