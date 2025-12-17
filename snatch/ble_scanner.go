@@ -23,7 +23,7 @@ func BLE_Scanner() {
 	// This method will be responsible for performing BLE Scan
 
 	if err := adapter.Enable();  err != nil{
-		fmt.Println(err)
+		fmt.Println(err); return
 	}
 
 
@@ -51,6 +51,9 @@ func BLE_Scanner() {
 		fmt.Println("RSSi: ", rssi)
 		fmt.Println("uuid: ", uuid)
 		fmt.Println("Manufacturer: ", manuf)
+
+
+		var client = adapter.Connect()
 
 
 
