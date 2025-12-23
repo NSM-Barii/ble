@@ -13,7 +13,7 @@ from bleak import BleakClient, BleakScanner
 
 
 # ETC IMPORTS
-import asyncio
+import asyncio, os, time
 
 console = Console()
 
@@ -99,9 +99,16 @@ class BLE_Sniffer():
         cls.data = {}
 
         i = 0
-        while i < timeout:
-            BLE_Sniffer._ble_printer(); timeout -= 2
+        try:
+            while i < timeout:
+                BLE_Sniffer._ble_printer(); timeout -= 2
         
+        except KeyboardInterrupt:
+            console.print("\n[bold red]Stopping....")
+        
+        except Exception as e:
+            console.print(f"[bold red]Sniffer Exception Error:[bold yellow] {e}")
+            
         #console.print(cls.devices)
 
         #for mac in cls.devices:
@@ -110,11 +117,42 @@ class BLE_Sniffer():
 
 
 
-
 class BLE_Enumerater():
     """This class will be responsible for performing connections --> BLE"""
 
 
+
+    async def _connect(target):
+        """This method will be responsible for device connection"""
+
+
+        try:
+
+            console.print(f"[bold yellow][*] Attempting Connection...")
+
+
+            async with BleakClient(target) as client:
+
+                if client.is_connected:
+
+                    console.print(f"[bold green][+] Successfully Connected to:[red] {target}")
+
+                    
+                    # ENUMARATE SERVICES
+                    await BLE_Enumerater._enumeration(client=client) 
+
+                    console.print(f"\n\n[bold red][-] Disconnected from:[bold yellow] {target}"); return True
+                
+                 
+                console.print(f"\n\n[bold red][-] Failed to connect to:[bold yellow] {target}"); return False
+
+        
+
+
+        except Exception as e:
+            console.print(f"[bold red]Connector Exception Error:[bold yellow] {e}")
+
+ 
 
     @classmethod
     async def _enumeration(cls, client: str) -> list:
@@ -127,7 +165,7 @@ class BLE_Enumerater():
             services = list(client.services)
             if not services: console.print("[bold red][-] No services found on this device!"); return
 
-            console.print(f"[bold green][*][bold yellow] Found {len(services)} service(s).")
+            console.print(f"[bold green][*][bold yellow] Found {len(services)} service(s).\n")
 
 
             # ENUMERATE SERVICES
@@ -166,15 +204,6 @@ class BLE_Enumerater():
                         f"\n{space}[{c3}][+] Properties:[/{c3}] {','.join(properties)}"                  
                         )
                     
-                    
-                    import os, time; t = 100000000
-                    for p in properties: 
-                        if "write-" in p:
-                            console.print(f"[bold green][+] Fuzzing:[/bold green] {properties} - {uuid} "); time.sleep(2)
-                            while t > 0:
-                                payload = os.urandom(5)
-                                await client.write_gatt_char(char_specifier=uuid, data=payload); t -= 1
-                                print(f"fuzzing: {payload}")
                             
                                                                         
                     if c > 1: lines = '=' * 50; console.print(f'[yellow]{space}{lines}'); c -= 1                    
@@ -187,8 +216,24 @@ class BLE_Enumerater():
 
     
 
-    async def _connect(target):
-        """This method will be responsible for device connection"""
+    @classmethod
+    def main(cls, target):
+        """This will run class methods"""
+
+
+        print("\n\n")
+        asyncio.run(BLE_Enumerater._connect(target=target))
+
+
+
+class BLE_Fuzzer():
+    """This class will be responsible for fuzzing ble chars"""
+
+
+    @classmethod
+    async def _connector(cls, target: str, uuid, f_type):
+        """This method will connect and create client"""
+
 
 
         try:
@@ -203,8 +248,8 @@ class BLE_Enumerater():
                     console.print(f"[bold green][+] Successfully Connected to: {target}")
 
                     
-                    # ENUMARATE SERVICES
-                    await BLE_Enumerater._enumeration(client=client) 
+                    # FUZZ SERVICES
+                    await BLE_Fuzzer._fuzzer(client=client, uuid=uuid, f_type=f_type) 
 
                     console.print(f"\n\n[bold red][-] Disconnected from:[bold yellow] {target}"); return True
                 
@@ -217,18 +262,60 @@ class BLE_Enumerater():
         except Exception as e:
             console.print(f"[bold red]Connector Exception Error:[bold yellow] {e}")
 
- 
+
 
     @classmethod
-    def main(cls, target):
-        """This will run class methods"""
+    async def _fuzzer(cls, client, uuid: any, f_type: int):
+        """Lets get to fuzzing"""
+
+        print("\n")
+
+
+        t = 100000000
+
+        payloads = [
+            b'\x01\x01',
+            b'\x01\xFF',
+            b'\xA0\x01',
+            b'\xAA\x55\x01\x00\x00',
+            b'\x01\x03\x00\x00\x00',
+            b'\xFF'*5,
+            b'\x00'*5,
+        ]
+
+        console.print(f"[bold green][+] Fuzz Type:[/bold green] {f_type}")
+        console.print(f"[bold green][+] Fuzzing --> [/bold green] {uuid} \n"); time.sleep(.5)
+ 
+        
+        if f_type == 1:
+
+            for p in payloads:
+
+                await client.write_gatt_char(char_specifier=uuid, data=p); t -= 1
+                console.print(f"[bold red][!] Fuzzing:[cyan] {p.hex()}")
+        
+        elif f_type == 2:
+            while t > 0:
+                payload = os.urandom(40)
+                await client.write_gatt_char(char_specifier=uuid, data=payload); t -= 1
+                console.print(f"[bold red][!] Fuzzing:[cyan] {payload.hex()}")
+    
+
+
+    @classmethod
+    def main(cls, target: str, uuid: any, f_type:int=1):
+        """Class starts from here"""
 
 
         print("\n\n")
-        asyncio.run(BLE_Enumerater._connect(target=target))
-
+        asyncio.run(BLE_Fuzzer._connector(target=target, uuid=uuid, f_type=f_type))
+        
 
         
+
+
+
+
 if __name__ == "__main__":
     target = BLE_Sniffer.main()
     BLE_Enumerater.main(target=target)

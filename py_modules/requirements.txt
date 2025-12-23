@@ -1,2 +1,6 @@
 bleak
 rich
+pathlib
+mac-vendor-lookup
+manuf
+
