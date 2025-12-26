@@ -472,7 +472,6 @@ class BLE_Connection_Spam():
 
             
             except Exception as e:
-                await client.pair()
                 console.print(f"[bold red]Connection_Spam Exception Error:[bold yellow] {e}")
                 await client.disconnect(); await asyncio.sleep(0.1)
     
