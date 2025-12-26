@@ -191,7 +191,6 @@ class BLE_Enumerater():
             console.print(f"[bold green][*][bold yellow] Found {len(services)} service(s).\n")
 
 
-            # ENUMERATE SERVICES
             num = 0
             for service in services:
                 
@@ -246,7 +245,6 @@ class BLE_Enumerater():
 
         print("\n\n")
         asyncio.run(BLE_Enumerater._connect(target=target))
-
 
 
 class BLE_Fuzzer():
@@ -327,7 +325,7 @@ class BLE_Fuzzer():
                 for character in characteristics:
 
                     uuid = character.uuid; description = character.description; handle = character.handle; properties = character.properties
-                    hi = (f"uuid: {uuid}", f"properties: {properties}"); chars.append(hi); c_count+= 1
+                    hi = (uuid, properties); chars.append(hi); c_count+= 1
 
         
             except Exception as e:
@@ -374,17 +372,23 @@ class BLE_Fuzzer():
 
             for s in send:
                 for id in uuid:
-                    identify = id[0].split(':')[1];  properties = id[1].split(':')[1]
-                    if s in properties: valid_uuids.append((identify, properties))
+                    identify = id[0]; properties = id[1]
+                    if s in properties: 
+                        console.print(f"[bold yellow][!][/bold yellow] {s} --> {properties} --> {identify}")
+                        valid_uuids.append(identify)
             
 
         
         else: 
-         
+            
             for id in uuid:
-                identify = id[0].split(':')[1]; valid_uuids.append(identify)
+                identify = id[0]; properties = id[1] 
+                console.print(f"[bold yellow][!][/bold yellow] all --> {properties} --> {identify}")
+                valid_uuids.append(identify) 
 
-        console.print(f"[bold red]Fuzzing[/bold red][bold yellow] -->[/bold yellow] {uuid}\n")
+         
+
+        console.print(f"[bold red][+] Fuzzing[/bold red][bold yellow] -->[/bold yellow] {valid_uuids}\n")
         
 
 
@@ -402,12 +406,14 @@ class BLE_Fuzzer():
 
                 while t > 0:
                     for id in valid_uuids:
+                        for payload in payloads:
                         
-                        payload = os.urandom(40)
-                        await client.write_gatt_char(char_specifier=str(id).strip(), data=payload, response=response); t -= 1
-                        console.print(f"[bold red][*] Fuzzing:[cyan] {payload.hex()}")
-            
-        
+                            payload = os.urandom(5)
+                            await client.write_gatt_char(char_specifier=str(id).strip(), data=payload, response=response); t -= 1
+                            console.print(f"[bold red][*] Fuzzing:[cyan] {payload.hex()}")
+                
+                        await asyncio.sleep(1)
+
         except Exception as e:
             console.print(f"[bold red]Fuzzer Exception Error:[bold yellow] {e}")
 
@@ -422,7 +428,65 @@ class BLE_Fuzzer():
         asyncio.run(BLE_Fuzzer._connector(target=target, uuid=uuid, send=send, response=response, f_type=f_type))
         
 
-        
+class BLE_Connection_Spam():
+    """This kik"""        
+
+
+    
+    @classmethod
+    async def _connection_spam(cls, target):
+        """Rapidly connect and disconnect from target"""
+
+
+        active = True
+        connections = 0
+        client = BleakClient(address_or_ble_device=target, timeout=10)
+
+        console.print(f"[bold yellow][*] Attempting Connection...")
+
+
+        while active:
+            try:
+                    
+
+              
+                await client.connect()
+                await client.pair()
+                console.print("tried to pair")
+                await asyncio.sleep(0.3)
+                await client.disconnect()
+                print("f")
+                console.print(f"[bold red][!][bold yellow] Connection #{connections}"); connections += 1
+                await client.pair()
+                client.write_gatt_char(char_specifier="00000001-0000-1001-8001-00805f9b07d0", data=os.urandom(5), response=True)
+                
+                #await client.unpair()
+                #if client.is_connected: await client.disconnect()
+            
+
+
+                #await client.connect(); connections += 1; await asyncio.sleep(0.01)
+                #await client.pair(); await asyncio.sleep(0.1); await client.unpair()
+                #await client.disconnect()
+            
+
+            
+            except Exception as e:
+                await client.pair()
+                console.print(f"[bold red]Connection_Spam Exception Error:[bold yellow] {e}")
+                await client.disconnect(); await asyncio.sleep(0.1)
+    
+
+
+    @classmethod
+    def main(cls, target: str):
+        """This method will control class logic"""
+
+
+        print("")
+        asyncio.run(BLE_Connection_Spam._connection_spam(target=target))
+
+                
 
 
 
