@@ -60,7 +60,7 @@ async def explore_device_services(client, show_descriptors=True):
                     if show_descriptors:
                         descriptors = char.descriptors
                         if descriptors:
-                            print(f"    Descriptors ({len(descriptors)}):")
+                            print(f"\n    Descriptors ({len(descriptors)}):")
                             for desc in descriptors:
                                 print(f"      UUID: {desc.uuid}")
                                 print(f"      Description: {desc.description}")
@@ -127,11 +127,11 @@ async def main():
     print()
 
     parser = argparse.ArgumentParser(description="Connect to a BLE device and list all services and attributes.")
-    parser.add_argument("mac_address", nargs="?", default="24:EC:4A:76:00:32", help="MAC address of the BLE device (default: 24:EC:4A:76:00:32)")
+    parser.add_argument("-m", nargs="?", default="24:EC:4A:76:00:32", help="MAC address of the BLE device (default: 24:EC:4A:76:00:32)")
     parser.add_argument("-d", "--descriptors", action="store_true", help="Show individual descriptors for each characteristic")
     args = parser.parse_args()
 
-    mac_address = args.mac_address
+    mac_address = args.m
     show_descriptors = args.descriptors
 
     print(f"Using MAC address: {mac_address}")

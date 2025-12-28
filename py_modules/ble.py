@@ -17,7 +17,7 @@ import asyncio, os, time
 
 
 # NSM IMPORTS
-from utilities import Utilities
+from database import DataBase
 
 console = Console()
 
@@ -64,8 +64,8 @@ class BLE_Sniffer():
         c4 = "bold red"
         c5 = "bold blue"
         table = Table(title="BLE Sniffer", title_style="bold red", border_style="bold purple", style="bold purple", header_style="bold red")
-        if vendor_lookup: table.add_column("RSSI", style=c2); table.add_column("Mac", style=c3); table.add_column("Vendor"); table.add_column("Local_name", style=c5); table.add_column("Manufacturer"); table.add_column("UUID", style=c3)
-        else: table.add_column("RSSI", style=c2); table.add_column("Mac", style=c3); table.add_column("Local_name", style=c5); table.add_column("Manufacturer"); table.add_column("UUID", style=c3)
+        if vendor_lookup: table.add_column("RSSI", style=c2); table.add_column("Mac", style=c3); table.add_column("Manufacturer"); table.add_column("vendor", style=c5); table.add_column("Local_name"); table.add_column("UUID", style=c3)
+        else: table.add_column("RSSI", style=c2); table.add_column("Mac", style=c3); table.add_column("Manufacturer", style=c5); table.add_column("Local_name"); table.add_column("UUID", style=c3)
 
 
         try:
@@ -87,9 +87,9 @@ class BLE_Sniffer():
                             name  = adv.local_name or False
                             rssi  = adv.rssi
                             uuid  = adv.service_uuids or False
-                            manuf = BLE_Sniffer._get_manuf(manuf=adv.manufacturer_data) or False
-                            if vendor_lookup: vendor = Utilities.get_vendor(mac=mac, verbose=False) or False
-
+                            manuf = DataBase._get_manufacturers(manufacturer_hex=adv.manufacturer_data, verbose=False) 
+                            if vendor_lookup: vendor = DataBase._get_vendor_new(mac=mac, verbose=False) 
+                            #if vendor_lookup: vendor = DataBase._get_vendor(mac=mac, verbose=False) 
 
                             data = {
                                 "addr": mac,
@@ -104,18 +104,20 @@ class BLE_Sniffer():
 
                             p1 = c3; p2 = "white" 
                              
-                            if vendor_lookup: table.add_row(f"{rssi}",f"{mac}", f"{vendor}", f"{name}", f"{manuf}",  f"{uuid}")
-                            else:             table.add_row(f"{rssi}", f"{mac}", f"{name}", f"{manuf}", f"{uuid}")
+                            if vendor_lookup: table.add_row(f"{rssi}",f"{mac}", f"{manuf}", f"{vendor}", f"{name}",  f"{uuid}")
+                            else:             table.add_row(f"{rssi}", f"{mac}", f"{manuf}", f"{name}", f"{uuid}")
                             #if vendor_lookup:  console.print(f"[{c2}][+][/{c2}] [{p1}]Addr:[{p2}] {mac} - [{p1}]RSSI:[{p2}] {rssi} - [{p1}]Local_name:[{p2}] {name} - [{p1}]Manufacturer:[{p2}] {manuf} - [{p1}]UUID:[{p2}] {uuid}") 
                             #else: console.print(f"[{c2}][+][/{c2}] [{p1}]Addr:[{p2}] {mac} - [{p1}]RSSI:[{p2}] {rssi} - [{p1}]Local_name:[{p2}] {name} - [{p1}]Manufacturer:[{p2}] {manuf} - [{p1}]UUID:[{p2}] {uuid}")
-    
+            
+
+            console.print(f"\n[bold green][+] Found a total of:[bold yellow] {len(devices)} devices")
                 
         except KeyboardInterrupt:
             return KeyboardInterrupt
 
 
         except Exception as e:
-            return Exception
+            console.print(f"[bold red]Sniffer Exception Error:[bold yellow] {e}")
 
 
 
@@ -259,7 +261,7 @@ class BLE_Fuzzer():
         while True:
             try:
 
-                console.print(f"[bold yellow][*] Attempting Connection...")
+                console.print(f"[bold yellow][*] Attempting Connection..."); cls.user = True
 
 
                 async with BleakClient(target) as client:
@@ -270,7 +272,7 @@ class BLE_Fuzzer():
 
 
                         # GET UUIDS if uuid == False
-                        if uuid == True: uuid = await BLE_Fuzzer._get_uuids(client=client)
+                        if uuid == True: uuid = await BLE_Fuzzer._get_uuids(client=client); cls.user = False
                         
                         # FUZZ SERVICES
                         await BLE_Fuzzer._fuzzer(client=client, uuid=uuid, send=send, response=response, f_type=f_type)
@@ -368,28 +370,35 @@ class BLE_Fuzzer():
 
         valid_uuids = []; raw = send.split(','); send = [s.strip() for s in raw if s.strip()] 
         
-        if "all" not in send:
 
-            for s in send:
+        if not cls.user:
+
+            if "all" not in send:
+
+                for s in send:
+                    for id in uuid:
+                        identify = id[0]; properties = id[1]
+                        if s in properties: 
+                            console.print(f"[bold yellow][!][/bold yellow] {s} --> {properties} --> {identify}")
+                            valid_uuids.append(identify)
+                
+
+            
+            else: 
+                
                 for id in uuid:
-                    identify = id[0]; properties = id[1]
-                    if s in properties: 
-                        console.print(f"[bold yellow][!][/bold yellow] {s} --> {properties} --> {identify}")
-                        valid_uuids.append(identify)
+                    identify = id[0]; properties = id[1] 
+                    console.print(f"[bold yellow][!][/bold yellow] all --> {properties} --> {identify}")
+                    valid_uuids.append(identify) 
+
             
 
+            console.print(f"[bold red][+] Fuzzing[/bold red][bold yellow] -->[/bold yellow] {valid_uuids}\n")
         
-        else: 
-            
-            for id in uuid:
-                identify = id[0]; properties = id[1] 
-                console.print(f"[bold yellow][!][/bold yellow] all --> {properties} --> {identify}")
-                valid_uuids.append(identify) 
 
-         
-
-        console.print(f"[bold red][+] Fuzzing[/bold red][bold yellow] -->[/bold yellow] {valid_uuids}\n")
+        if cls.user: console.print(f"[bold red][+] Fuzzing[/bold red][bold yellow] -->[/bold yellow] {uuid}\n")
         
+
 
 
         try:
@@ -408,11 +417,11 @@ class BLE_Fuzzer():
                     for id in valid_uuids:
                         for payload in payloads:
                         
-                            payload = os.urandom(5)
-                            await client.write_gatt_char(char_specifier=str(id).strip(), data=payload, response=response); t -= 1
-                            console.print(f"[bold red][*] Fuzzing:[cyan] {payload.hex()}")
+                            payload = b"\1E240";  data = "123456".encode('utf-8')
+                            await client.write_gatt_char(char_specifier=str(id).strip(), data=b"123456", response=response); t -= 1
+                            console.print(f"[bold red][*] Fuzzing:[cyan] {data.hex()}")
                 
-                        await asyncio.sleep(1)
+                        #await asyncio.sleep(1)
 
         except Exception as e:
             console.print(f"[bold red]Fuzzer Exception Error:[bold yellow] {e}")
@@ -422,6 +431,9 @@ class BLE_Fuzzer():
     @classmethod
     def main(cls, target: str, uuid: any, send, response, f_type:int=1):
         """Class starts from here"""
+
+
+        if send  not in ["notify", "read", "write", "all"]: console.print("--send inputs not valid, try: write, read, notify, all")
 
 
         print("")
@@ -434,7 +446,7 @@ class BLE_Connection_Spam():
 
     
     @classmethod
-    async def _connection_spam(cls, target):
+    async def _connection_spam(cls, target, pair):
         """Rapidly connect and disconnect from target"""
 
 
@@ -447,30 +459,16 @@ class BLE_Connection_Spam():
 
         while active:
             try:
-                    
-
-              
+                               
                 await client.connect()
-                await client.pair()
-                console.print("tried to pair")
-                await asyncio.sleep(0.3)
-                await client.disconnect()
-                print("f")
-                console.print(f"[bold red][!][bold yellow] Connection #{connections}"); connections += 1
-                await client.pair()
-                client.write_gatt_char(char_specifier="00000001-0000-1001-8001-00805f9b07d0", data=os.urandom(5), response=True)
+                client.unpair()
+                if pair: await client.pair(); console.print("\n[bold red][!] Successfully Paired!")
+               # await asyncio.sleep(0.1)
+                await client.disconnect(); console.print("\n[bold red][!] Gracefully Disconnected")
                 
-                #await client.unpair()
-                #if client.is_connected: await client.disconnect()
-            
+                console.print(f"[bold red][!][bold yellow] Connection #{connections}"); connections += 1
 
 
-                #await client.connect(); connections += 1; await asyncio.sleep(0.01)
-                #await client.pair(); await asyncio.sleep(0.1); await client.unpair()
-                #await client.disconnect()
-            
-
-            
             except Exception as e:
                 console.print(f"[bold red]Connection_Spam Exception Error:[bold yellow] {e}")
                 await client.disconnect(); await asyncio.sleep(0.1)
@@ -478,12 +476,14 @@ class BLE_Connection_Spam():
 
 
     @classmethod
-    def main(cls, target: str):
+    def main(cls, target: str, pair):
         """This method will control class logic"""
+
+        
 
 
         print("")
-        asyncio.run(BLE_Connection_Spam._connection_spam(target=target))
+        asyncio.run(BLE_Connection_Spam._connection_spam(target=target, pair=pair))
 
                 
 
