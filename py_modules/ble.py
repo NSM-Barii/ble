@@ -316,6 +316,7 @@ class BLE_Fuzzer():
     
                     uuid = character.uuid; description = character.description; handle = character.handle; properties = character.properties
                     hi = (uuid, properties); chars.append(hi); c_count+= 1
+                    print(hi)
 
 
         
@@ -374,6 +375,7 @@ class BLE_Fuzzer():
 
             
             else: 
+                print(uuid)
                 
                 for id in uuid:
                     identify = id[0]; properties = id[1] 
