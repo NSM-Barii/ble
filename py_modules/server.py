@@ -24,21 +24,33 @@ class HTTP_Handler(SimpleHTTPRequestHandler):
 
 
 
+    def log_message(self, fmt, *args):
+        """Silence HTTP server logs"""
+        pass
+
     def do_GET(self) -> None:
         """This will handle basic web server requests"""
-        
+
 
         if self.path == "/api/devices":
 
-            self.send_response("200")
-            self.send_header("content-type" "application/json")
+            self.send_response(200)
+            self.send_header("content-type", "application/json")
             self.send_header("Access-Control-Allow-Origin", '*')
             self.end_headers()
 
             self.wfile.write(json.dumps(BLE_Sniffer.live_map).encode())
 
+        elif self.path == "/api/wardriving":
 
-        else: super.do_GET()
+            self.send_response(200)
+            self.send_header("content-type", "application/json")
+            self.send_header("Access-Control-Allow-Origin", '*')
+            self.end_headers()
+
+            self.wfile.write(json.dumps(BLE_Sniffer.war_drive).encode())
+
+        else: super().do_GET()
 
 
 

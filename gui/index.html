@@ -3,14 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BLE Proximity Monitor</title>
+    <title>BLUEMAP</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
         <header>
             <div class="header-content">
-                <h1><span class="glitch" data-text="BLE PROXIMITY MONITOR">BLE PROXIMITY MONITOR</span></h1>
+                <h1><span class="glitch" data-text="BLUEMAP">BLUEMAP</span></h1>
+                <div class="nav-tabs">
+                    <button class="nav-tab active" data-tab="dashboard">DASHBOARD</button>
+                    <button class="nav-tab" data-tab="wardriving">WARDRIVING DATA</button>
+                </div>
                 <div class="status-bar">
                     <span class="status-indicator" id="connection-status">
                         <span class="status-dot"></span> SCANNING
@@ -19,6 +23,9 @@
                 </div>
             </div>
         </header>
+
+        <!-- Dashboard Tab -->
+        <div class="tab-content active" id="dashboard-tab">
 
         <div class="main-grid">
             <!-- Left Panel: Device List -->
@@ -85,6 +92,48 @@
             </div>
             <div class="movement-grid" id="movement-grid">
                 <!-- Movement indicators will be populated here -->
+            </div>
+        </div>
+        </div>
+
+        <!-- Wardriving Tab -->
+        <div class="tab-content" id="wardriving-tab">
+            <div class="wardriving-container">
+                <div class="panel wardriving-panel">
+                    <div class="panel-header">
+                        <h2>CAPTURED DEVICES</h2>
+                        <div class="wardriving-stats">
+                            <span class="stat-badge" id="total-captured">0 DEVICES</span>
+                            <button class="export-btn" id="export-btn">EXPORT DATA</button>
+                        </div>
+                    </div>
+                    <div class="wardriving-filters">
+                        <input type="text" id="search-filter" placeholder="SEARCH MAC, NAME, VENDOR..." class="filter-input">
+                        <select id="manufacturer-filter" class="filter-select">
+                            <option value="all">ALL MANUFACTURERS</option>
+                        </select>
+                    </div>
+                    <div class="wardriving-table-container">
+                        <table class="wardriving-table" id="wardriving-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>ICON</th>
+                                    <th>NAME</th>
+                                    <th>MAC ADDRESS</th>
+                                    <th>MANUFACTURER</th>
+                                    <th>VENDOR</th>
+                                    <th>RSSI</th>
+                                    <th>UUID</th>
+                                    <th>FIRST SEEN</th>
+                                </tr>
+                            </thead>
+                            <tbody id="wardriving-tbody">
+                                <!-- Data will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
