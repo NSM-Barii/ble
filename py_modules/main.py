@@ -23,7 +23,7 @@ class Main_Menu():
 
 
     parser = argparse.ArgumentParser(
-        description="BLE Framework for Wireless Recon, Fuzzing & Hacking"
+        description="IOT Framework for Wireless Recon, Fuzzing & Hacking"
     )
 
 
@@ -74,7 +74,8 @@ class Main_Menu():
 
 
 
-    if scan or vendor or war: BLE_Sniffer.main(timeout=int(time), vendor_lookup=vendor, war_drive=war); exit()
+    if scan or vendor or war: 
+        BLE_Sniffer.main(timeout=int(time), vendor_lookup=vendor, war_drive=war); exit()
 
 
     if not mac: console.print(f"[bold red]use -m to pass a MAC Addr silly goose..."); exit()

@@ -13,11 +13,12 @@ from bleak import BleakClient, BleakScanner
 
 
 # ETC IMPORTS
-import asyncio, os, time, random
+import asyncio, os, time, random, threading
 
 
 # NSM IMPORTS
 from database import DataBase
+
 
 console = Console()
 
@@ -84,39 +85,49 @@ class BLE_Sniffer():
                     
                     for mac, (device, adv) in devices.items():
 
+
+
+                        name  = adv.local_name or False
+                        rssi  = adv.rssi
+                        uuid  = adv.service_uuids or False
+                        manuf = DataBase._get_manufacturers(manufacturer_hex=adv.manufacturer_data, verbose=False) 
+                        vendor = DataBase._get_vendor_main(mac=mac, verbose=False) if vendor_lookup else  False 
+                                        
+
+                        data = {
+                            "rssi": rssi,
+                            "addr": mac,
+                            "manuf": manuf,
+                            "vendor": vendor,
+                            "name": name,
+                            "uuid": uuid
+                        }
+
+
+                        cls.live_map[mac] = data
+
                         if mac not in cls.devices:
-
-
-                            name  = adv.local_name or False
-                            rssi  = adv.rssi
-                            uuid  = adv.service_uuids or False
-                            manuf = DataBase._get_manufacturers(manufacturer_hex=adv.manufacturer_data, verbose=False) 
-                            vendor = DataBase._get_vendor_main(mac=mac, verbose=False) if vendor_lookup else  False 
-                            #if vendor_lookup: vendor = DataBase._get_vendor(mac=mac, verbose=False) 
-
-
-                            data = {
-                                "rssi": rssi,
-                                "addr": mac,
-                                "manuf": manuf,
-                                "vendor": vendor,
-                                "name": name,
-                                "uuid": uuid
-                            }
-
-
+                            
                             cls.devices.append(mac)
                             cls.war_drive[len(cls.devices)] = data
-
-
+                           
+                            if uuid: table.add_section()
 
                             p1 = c3; p2 = "white" 
                             if vendor_lookup: table.add_row(f"{len(cls.devices)}", f"{rssi}", f"{mac}", f"{manuf}", f"{vendor}", f"{name}",  f"{uuid}")
                             else:             table.add_row(f"{len(cls.devices)}", f"{rssi}", f"{mac}", f"{manuf}", f"{name}",   f"{uuid}")
+
+                            if uuid: table.add_section()
             
+
+
                             #if vendor_lookup:  console.print(f"[{c2}][+][/{c2}] [{p1}]Addr:[{p2}] {mac} - [{p1}]RSSI:[{p2}] {rssi} - [{p1}]Local_name:[{p2}] {name} - [{p1}]Manufacturer:[{p2}] {manuf} - [{p1}]UUID:[{p2}] {uuid}") 
                             #else: console.print(f"[{c2}][+][/{c2}] [{p1}]Addr:[{p2}] {mac} - [{p1}]RSSI:[{p2}] {rssi} - [{p1}]Local_name:[{p2}] {name} - [{p1}]Manufacturer:[{p2}] {manuf} - [{p1}]UUID:[{p2}] {uuid}")
-                             
+                        
+
+
+
+                        
 
             console.print(f"\n[bold green][+] Found a total of:[bold yellow] {len(cls.devices)} devices")
 
@@ -137,14 +148,16 @@ class BLE_Sniffer():
         
         cls.war_drive = {}
         cls.devices = []
+        cls.live_map = {}
         if war_drive: timeout = 30 * 60; vendor_lookup = True
 
 
         try:
 
-            BLE_Sniffer._ble_printer(timeout=timeout, vendor_lookup=vendor_lookup, war_drive=war_drive)
+            threading.Thread(target=BLE_Sniffer._ble_printer, args=(timeout, vendor_lookup, war_drive), daemon=True).start()
+            if war_drive: from server import Web_Server; Web_Server.start()
+            while True: time.sleep(1)
         
-
         
         except KeyboardInterrupt:
             console.print("\n[bold red]Stopping....")

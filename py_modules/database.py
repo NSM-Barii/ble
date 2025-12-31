@@ -351,12 +351,7 @@ class DataBase():
 
                     if device["addr"] not in macs:
 
-                        num += 1; mac = value["addr"]; macs.append(mac)
-                        data[num] = value; console.print("Not in:", mac)
-
-
-            #console.print(data)
-
+                        num += 1; mac = value["addr"]; macs.append(mac); data[num] = value
 
 
             with open(drive, "w") as file: json.dump(data, file, indent=4)
