@@ -87,11 +87,6 @@ class Main_Menu():
     
     elif dump: BLE_Enumerater.main(target=mac)
 
-    
-
-    mac = mac.strip()
-
- 
         
         
 
