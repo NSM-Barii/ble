@@ -323,7 +323,9 @@ class DataBase():
 
         with LOCK:
 
-            data_new = devices
+            data  = {}
+            num = 0
+            macs = []
             
         
             try:
@@ -337,30 +339,33 @@ class DataBase():
             BASE_DIR.mkdir(exist_ok=True, parents=True)
             
             try:
-                if not BASE_DIR.exists(): BASE_DIR.mkdir(parents=True, exist_ok=True); console.print(f"[+] Successfully made file path: {BASE_DIR}")
 
                 drive = BASE_DIR / "war_drive.json"
     
     
                 if drive.exists():
 
-                    with open(drive, "r") as file: data = json.load(file); num = 0; macs = []
+                    with open(drive, "r") as file: data = json.load(file)
 
                     for _, value in data.items(): macs.append(value["addr"]); num+=1
 
-                    for _, device in devices.items(): 
+                for _, device in devices.items(): 
 
-                        if device["addr"] not in macs:
+                    if device["addr"] not in macs:
 
-                            num += 1; mac = value["addr"]; macs.append(mac); data[num] = value
-                            console.print(mac)
-                
+                        num += 1; macs.append(device["addr"]); data[num] = device
+            
 
                 with open(drive, "w") as file: json.dump(data, file, indent=4)
                 if verbose: console.print("[bold green][+] Wardrive pushed!")
-                console.print(data)
-                
-                
+                #console.print(data)
+            
+            except json.JSONDecodeError as e:
+                console.print(f"[bold red][!] JSON Error:[bold yellow] {e}")
+                with open(drive, "w") as file: json.dump(data, file, indent=4)
+                console.print("[bold green][+] json file created!")
+
+                          
             except Exception as e:
                 console.print(f"[bold red][!] Exception Error:[bold yellow] {e}")
 

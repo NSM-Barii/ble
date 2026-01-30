@@ -34,7 +34,7 @@ class BLE_Sniffer():
         """This will sniff traffic"""
 
 
-        devices =  await BleakScanner.discover(timeout=2, return_adv=True)
+        devices = await BleakScanner.discover(timeout=60, return_adv=True)
 
         return devices
     
@@ -55,7 +55,7 @@ class BLE_Sniffer():
 
 
     @classmethod
-    def _ble_printer(cls, timeout, vendor_lookup, war_drive: bool, print: bool = True) -> None:
+    async def _ble_printer(cls, timeout, vendor_lookup, war_drive: bool, print: bool = True) -> None:
         """Lets enumerate"""
 
 
@@ -74,10 +74,17 @@ class BLE_Sniffer():
 
         try:
 
+            scanner = BleakScanner()
+
             with Live(table, console=console, refresh_per_second=4):
                 while 0 < timeout:
-
-                    devices = asyncio.run(BLE_Sniffer._ble_discover()); timeout -= 2
+                    
+                    
+                    await scanner.start()
+                    await asyncio.sleep(5)
+                    await scanner.stop()
+                    devices = scanner.discovered_devices_and_advertisement_data
+                    #devices = asyncio.run(BLE_Sniffer._ble_discover()); timeout -= 2
 
 
                     if not devices: return
@@ -117,6 +124,10 @@ class BLE_Sniffer():
                                 else:             table.add_row(f"{len(cls.devices)}", f"{rssi}", f"{mac}", f"{manuf}", f"{name}",   f"{uuid}")
 
                                 if uuid: table.add_section()
+                            
+
+                            elif war_drive:
+                                console.print(f"{len(cls.devices)}", rssi, mac, manuf, vendor, name, uuid)
                 
 
 
@@ -163,9 +174,11 @@ class BLE_Sniffer():
 
 
         try:
-
-            threading.Thread(target=BLE_Sniffer._ble_printer, args=(timeout, vendor_lookup, war_drive, print), daemon=True).start()
-            if war_drive or print: from server import Web_Server; Web_Server.start(CONSOLE=console); time.sleep(1)
+            
+            
+            if war_drive or print: from server import Web_Server; threading.Thread(target=Web_Server.start, args=(console, ), daemon=True).start(); time.sleep(1)
+            asyncio.run(BLE_Sniffer._ble_printer(timeout=timeout, vendor_lookup=vendor_lookup, war_drive=war_drive, print=print))
+            #threading.Thread(target=asyncio.run(BLE_Sniffer._ble_printer), args=(timeout, vendor_lookup, war_drive, print), daemon=True).start()
             while True: time.sleep(1)
         
         
