@@ -25,13 +25,12 @@ class Main_Menu():
 
 
     data = (
-        "\n    [bold green]IoT & Wireless Security Framework"
-        "\n\n  [bold red]BLE • WiFi • Fuzzing • Recon • CVE Research"
-        "\n\n  [bold red]Offensive Security & Vuln Hunting"
-        "\n\n          [bold green]Made by NSM-Barii\n"
+        "\n       [bold cyan]IoT Exploitation Framework[/bold cyan]"
+        "\n\n            [bold yellow]BLE • WiFi • UART[/bold yellow]"
+        "\n\n              [bold magenta]Made by NSM-Barii[/bold magenta]\n"
     )
 
-    panel = Panel(renderable=data, expand=False, style="yellow")
+    panel = Panel(renderable=data, expand=False, style="bold red")
 
 
     # I wil be calling this project/Framework NodeX
@@ -43,29 +42,27 @@ class Main_Menu():
 
 
    # parser.add_argument("-h", help="Display help, usage info, and project banner")
-    parser.add_argument("-w", action="store_true", help="BLE Wardriving along with automatic data saving")
-    parser.add_argument("-wv", action="store_true", help="BLE Wardriivng with command output")
+    parser.add_argument("-w", action="store_true", help="BLE wardriving with automatic data logging")
+    parser.add_argument("-wv", action="store_true", help="BLE wardriving with verbose output")
 
+    parser.add_argument("-s", action="store_true", help="Perform local BLE scan")
+    parser.add_argument("-sv", action="store_true", help="BLE scan with vendor lookup")
 
-    parser.add_argument("-s", action="store_true", help="Perform a local ble scan")
-    parser.add_argument("-sv", action="store_true", help="Lookup info on MAC Addr, such as vendor")
+    parser.add_argument("-t", default=10, help="Scan timeout in seconds (default: 10)")
+    parser.add_argument("-m", help="Target MAC address")
 
-    parser.add_argument("-t", default=10, help="Set timeout for how long ble scan may persist")
-    parser.add_argument("-m", help="Set mac address for targeted control")
+    parser.add_argument("-d", action="store_true", help="Dump GATT services from target")
 
-    parser.add_argument("-d", action="store_true", help="Connect to MAC Addr, enumerate and dump gatt services.")
+    parser.add_argument("-c", action="store_true", help="Connection spam attack")
+    parser.add_argument("-cp", action="store_true", help="Connection + pairing spam attack")
 
-    parser.add_argument("-c", action="store_true", help="Perform a connection spam on targe MAC Addr")
-    parser.add_argument("-cp", action="store_true", help="Perform a connection/Pairing spam on targe MAC Addr")
+    parser.add_argument("-f", action="store_true", help="Fuzz all characteristics on target")
+    parser.add_argument("-ft", help="Fuzz specific characteristic UUID")
+    parser.add_argument("--type", help="Fuzzing type")
+    parser.add_argument("--send", help="Write properties: write, write-without-response, read, notify, all")
+    parser.add_argument("--response", help="Write-response flag: 0 or 1")
 
-    parser.add_argument("-f",action="store_true", help="Fuzz a target MAC Addr and all its characteristics automatically with random bits of data")
-    parser.add_argument("-ft", help="Fuzz a target MAC Addr and the inputted characteristic with random bytes of data")
-    parser.add_argument("--type", help="The type of fuzzing you want to be done")
-    parser.add_argument("--send", help="Properties to write to: write, write-without-response, read, notify, all")
-    parser.add_argument("--response", help="Set write-response from client to True or False - 0 or 1")
-
-
-    parser.add_argument("--telnet", action="store_true", help="This will start a common dictionary attack on a given IP with a open telnet service using a preset list of credentials")
+    parser.add_argument("--telnet", action="store_true", help="Telnet dictionary attack with preset credentials")
 
 
     args = parser.parse_args()
