@@ -8,7 +8,7 @@ console = Console()
 
 
 # ETC IMPORTS
-import argparse
+import argparse, sys
 
 
 # NSM MODULES
@@ -83,6 +83,10 @@ class Main_Menu():
 
     # TELNET
     telnet   = args.telnet
+
+
+    if len(sys.argv) == 1:
+        parser.print_help(); exit()
 
     
     if scan or vendor or war: 
