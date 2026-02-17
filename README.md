@@ -35,7 +35,7 @@ A comprehensive toolkit for security testing and vulnerability research on IoT d
 
 ```bash
 # Clone the repository
-git clone <repo-url> ble
+git clone github.com/NSM-Barii/ble
 cd ble/py_modules
 
 # Create and activate virtual environment
