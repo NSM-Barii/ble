@@ -21,6 +21,22 @@ from nsm_telnet import Telnet_Brute_Forcer
 class Main_Menu():
     """This class will gatekeep program wide logic"""
 
+
+
+    banner = """
+[bold cyan]═══════════════════════════════════════════════════════════════[/bold cyan]
+
+           [bold white]IoT & Wireless Security Framework[/bold white]
+        [bold yellow]BLE • WiFi • Fuzzing • Recon • CVE Research[/bold yellow]
+
+              [bold magenta]Offensive Security & Vuln Hunting[/bold magenta]
+                    [bold white]Made by NSM-Barii[/bold white]
+
+[bold cyan]═══════════════════════════════════════════════════════════════[/bold cyan]
+"""
+    
+    
+
     # I wil be calling this project/Framework NodeX
 
 
@@ -86,6 +102,7 @@ class Main_Menu():
 
 
     if len(sys.argv) == 1:
+        console.print(banner)
         parser.print_help(); exit()
 
     
