@@ -2,6 +2,13 @@
 
 
 
+# UI IMPORTS
+from rich.live import Live
+from rich.panel import Panel    
+
+
+
+
 # NETWORK IMPORTS
 import socket
 from scapy.all import sniff, RadioTap, IP, ICMP, sr1, sendp, RandMAC, wrpcap, Ether, ARP, srp
@@ -60,7 +67,7 @@ class SSID_Sniffer():
         
             # THIS IS STRICTLY USED TO CAPTURE BEACON FRAMES // SENT FROM AP'S
             if pkt.haslayer(Dot11Beacon):
-
+               
 
                 ssid = pkt[Dot11Elt].info.decode(errors="ignore") if pkt[Dot11Elt].info.decode(errors="ignore") else "Missing SSID"
                 addr1 = str(pkt[Dot11].addr1) if pkt[Dot11].addr1 != "ff:ff:ff:ff:ff:ff" else False
@@ -87,7 +94,7 @@ class SSID_Sniffer():
                         table.add_row(f"{cls.num}", f"{rssi}", f"{ssid}", f"{addr2}", f"{vendor}", f"{encryption}", f"{frequency}", f"{channel}")
             
 
-        threading.Thread(target=parser, args=(pkt,), daemon=True).start()
+        threading.Thread(target=parser, args=(pkt, ), daemon=True).start()
             
 
     @classmethod
@@ -99,9 +106,10 @@ class SSID_Sniffer():
         while len(cls.ssids) < 1:
 
             console.print(f"\n[bold yellow][!] SSID Sniff starting...\n")
-            sniff(iface=iface, store=0, count=0, timeout=timeout, prn=lambda pkt: SSID_Sniffer._packet_parser(pkt, table), verbose=verbose)
+            sniff(iface, store=0, timeout=timeout,  prn=lambda pkt: SSID_Sniffer._packet_parser(pkt, table))
 
-
+        
+        console.print(table)
         console.print(f"[bold green][+] Found:[yellow] {cls.ssids} SSIDs")
 
 
@@ -524,20 +532,8 @@ class Beacon_Flooder():
                     
 
 
-                except KeyboardInterrupt as e:
-                    console.print(f"ATTEMPTING TO ESCAPE THE MATRIX", style="bold red")
-
-                    try:   time.sleep(0.5); break
-                    except KeyboardInterrupt as e: console.print("STOP PRESSING CTRL + C", style="bold yellow")
-
-
-                
-                except Exception as e:
-                    console.print(e)
-                    
-                    if down < 3: down += 1
-                    elif down == 4: console.print("[bold red]MAX ERRORS OCCURED: 4"); time.sleep(2); break
-
+                except KeyboardInterrupt as e: console.print(f"ATTEMPTING TO ESCAPE THE MATRIX", style="bold red"); break
+                except Exception as e: console.print(e); break
 
 
     @classmethod
@@ -641,7 +637,7 @@ class War_Driving():
         def parser(pkt):
 
             
-            if pkt.haslayer(Dot11Beacon) and cls.mode == 1:
+            if pkt.haslayer(Dot11Beacon) and cls.mode in [1,3]:
 
 
                 ssid = pkt[Dot11Elt].info.decode(errors="ignore") if pkt[Dot11Elt].info.decode(errors="ignore") else "Missing SSID"
@@ -657,7 +653,7 @@ class War_Driving():
                     cls.macs.append(addr1)
 
                     signal = DataBase.get_rssi(pkt=pkt, format=True)
-                    vendor = DataBase.get_vendor(mac=addr2)                      
+                    vendor = DataBase.get_vendor_main(mac=addr2)                      
                     signal = f"[bold red]Signal:[/bold red] {signal}"  
 
 
@@ -677,7 +673,7 @@ class War_Driving():
                     cls.beacons.append(addr2)
 
                     signall = DataBase.get_rssi(pkt=pkt, format=True)
-                    vendor = DataBase.get_vendor(mac=addr2)                      
+                    vendor = DataBase.get_vendor_main(mac=addr2)                      
                     signal = f"[bold red]Signal:[/bold red] {signall}"  
 
 
@@ -703,7 +699,7 @@ class War_Driving():
 
             
             # FOR CLIENTS AND NON BEACON FRAMES
-            elif pkt.haslayer(Dot11) and cls.mode==2:
+            elif pkt.haslayer(Dot11) and cls.mode in [2, 3]:
 
 
                 addr1 = pkt[Dot11].addr1 if pkt[Dot11].addr1 != "ff:ff:ff:ff:ff:ff" else False
@@ -720,7 +716,7 @@ class War_Driving():
                     cls.macs.append(addr1)
                                 
                     signal = DataBase.get_rssi(pkt=pkt, format=True)
-                    vendor = DataBase.get_vendor(mac=addr2)  
+                    vendor = DataBase.get_vendor_main(mac=addr2)  
                     signal = f"[bold red]Signal:[/bold red] {signal}"  
 
                     if vendor: use = f"[bold red]Vendor:[bold yellow] {vendor}  {signal}"
@@ -737,7 +733,7 @@ class War_Driving():
                     cls.macs.append(addr2)
 
                     signal = DataBase.get_rssi(pkt=pkt, format=True)
-                    vendor = DataBase.get_vendor(mac=addr2)  
+                    vendor = DataBase.get_vendor_main(mac=addr2)  
                     signal = f"[bold red]Signal:[/bold red] {signal}"  
 
                     if vendor: use = f"[bold red]Vendor:[bold yellow] {vendor}  {signal}"
@@ -817,7 +813,7 @@ class War_Driving():
             
 
     @classmethod
-    def main(cls, mode=1):
+    def main(cls):
         """This will be in charge of running class wide logic"""
 
 
@@ -829,14 +825,14 @@ class War_Driving():
         cls.macs = []
         cls.beacons = []
         cls.LIVE = True
-        cls.mode = mode
 
 
         # WAR DRIVER
         cls.aps = {}
 
-        iface = Variables.iface
-        panel = Variables.panel
+        cls.mode = Variables.mode
+        iface    = Variables.iface
+        panel    = Variables.panel
 
  
         try:
@@ -902,20 +898,11 @@ class Evil_Twin():
         """This will be used to get the path of the portal to use"""
 
 
-        # TEMP FIX FOR FILE CRASHING WITHOUT SUDO
-        try:
-            USER_HOME = Path(os.getenv("SUDO_USER") and f"/home/{os.getenv('SUDO_USER')}") or Path.home()
-            BASE_DIR = USER_HOME / "Documents" / "nsm_tools" / "netcracker" 
-        except Exception as e: 
-
-            console.print(e)
-            # SWITCH BACK TO PATH
-            BASE_DIR = Path.home() / "Documents" / "nsm_tools" / "netcracker";  BASE_DIR.mkdir(exist_ok=True, parents=True)
-        
-        PORTAL_DIR =  BASE_DIR / "portals";                                 PORTAL_DIR.mkdir(exist_ok=True, parents=True)
+        BASE_DIR = Path(__file__).parent.parent / "database" 
+        BASE_DIR.mkdir(exist_ok=True, parents=True)
 
 
-        return PORTAL_DIR, Path(BASE_DIR / "portals" / portal)
+        return BASE_DIR, Path(BASE_DIR / "portals" / portal)
 
 
     @staticmethod

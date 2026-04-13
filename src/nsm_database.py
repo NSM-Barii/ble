@@ -3,16 +3,30 @@
 
 
 # UI IMPORTS
-from rich.console import Console
-console = Console()
+#from rich.console import Console
+#console = Console()
+
+
+
+from scapy.all import sniff, RadioTap, IP, ICMP, sr1, sendp, RandMAC, wrpcap, Ether, ARP, srp
+from scapy.layers.eap import EAPOL
+from scapy.layers.dot11 import Dot11, Dot11Beacon, Dot11Elt, Dot11Deauth, Dot11ProbeReq, Dot11ProbeResp
+
+
 
 
 # IMPORTS
-import manuf, json, os, threading
+import manuf, json, os, threading, time, subprocess
 from pathlib import Path
 from mac_vendor_lookup import MacLookup #vendors = MacLookup().load_vendors()
 
-LOCK = threading.Lock()
+
+
+# NSM IMPORTS
+from nsm_vars import Variables
+
+LOCK = Variables.LOCK
+console = Variables.console
 
 
 
@@ -562,15 +576,14 @@ class Background_Threads:
     def channel_hopper(cls, set_channel=False, verbose=False):
         """This method will be responsible for automatically hopping channels"""
 
-        # NSM IMPORTS
-        from nsm_files import Settings
 
         def hopper():
 
             delay = 0.25
             all_hops = [1, 6, 11, 36, 40, 44, 48, 149, 153, 157, 161]
+            
+            iface = Variables.iface
 
-            iface = Settings.get_json()["iface"]
 
             # TUNE HOP
             if set_channel:

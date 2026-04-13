@@ -1,0 +1,8 @@
+# USED TO INSTALL DEPENDENCIES FOR EVIL TWIN
+
+
+# DEBIAN
+sudo apt update && sudo apt install hostapd dnsmasq -y
+
+# ARCH
+sudo pacman -Syu && sudo pacman -S hostapd dnsmasq
