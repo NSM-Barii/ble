@@ -5,7 +5,6 @@
 from rich.table import Table
 from rich.live import Live
 from rich.panel import Panel
-from rich.console import Console
 
 
 # HACKING IMPORTS
@@ -17,11 +16,14 @@ import asyncio, os, time, random, threading
 
 
 # NSM IMPORTS
+from nsm_vars import Variables
 from nsm_database import DataBase
 
 
-console = Console()
-LOCK = threading.Lock
+# CONSTANTS
+DataBase = DataBase.Bluetooth
+console = Variables.console
+LOCK    = Variables.LOCK  
 
 
 class BLE_Sniffer(): 
@@ -39,7 +41,6 @@ class BLE_Sniffer():
         return devices
     
     
-
     @staticmethod
     def _get_manuf(manuf):
         """This will parse and get manuf"""
@@ -51,7 +52,6 @@ class BLE_Sniffer():
             data[key] = value.hex()
 
         return data
-
 
 
     @classmethod
@@ -156,17 +156,20 @@ class BLE_Sniffer():
             console.print(f"[bold red]Sniffer Exception Error:[bold yellow] {e}") 
 
 
-
-        
     @classmethod
-    def main(cls, scan, timeout, vendor_lookup):
+    def main(cls):
         """Run from here"""
-        
+
+        if not Variables.ble_sniffer: return
+
         cls.war_drive = {}
         cls.devices = []
         cls.live_map = {}
-        cls.num =0
-        #if scan: timeout = 30 * 60; vendor_lookup = True
+        cls.num = 0
+
+        scan          = Variables.scan
+        timeout       = Variables.timeout
+        vendor_lookup = Variables.vendor
 
 
         try:
@@ -286,11 +289,17 @@ class BLE_Enumerater():
     
 
     @classmethod
-    def main(cls, target):
+    def main(cls):
         """This will run class methods"""
 
+        target = Variables.mac
+
+        if not target: return False
+        if not Variables.ble_enumeration: return
 
         print("\n\n")
+
+
         asyncio.run(BLE_Enumerater._connect(target=target))
 
 
@@ -464,12 +473,22 @@ class BLE_Fuzzer():
 
 
     @classmethod
-    def main(cls, target: str, uuid: any, send, response, f_type:int=1):
+    def main(cls):
         """Class starts from here"""
 
+        target = Variables.mac
+        uuid = Variables.fuzz if Variables.fuzz else Variables.fuzz_u
+        send = Variables.send
+        response = Variables.response
+        f_type = Variables.f_type
 
-        if send  not in ["notify", "read", "write", "all"]: console.print("--send inputs not valid, try: write, read, notify, all")
+        if not target: return False
+        if not Variables.ble_fuzzer: return False
 
+
+        if send not in ["notify", "read", "write", "all"]:
+            console.print("--send inputs not valid, try: write, read, notify, all")
+            return False
 
         print("")
         asyncio.run(BLE_Fuzzer._connector(target=target, uuid=uuid, send=send, response=response, f_type=f_type))
@@ -529,10 +548,13 @@ class BLE_Connection_Spam():
 
 
     @classmethod
-    def main(cls, target: str, pair):
+    def main(cls):
         """This method will control class logic"""
 
-        
+        target = Variables.mac
+        pair   = Variables.pair
+        if not target: return False 
+        if not Variables.ble_connection_spam: return False
 
 
         print("")

@@ -7,3 +7,9 @@ manuf
 pyyaml
 telnetlib3
 ipaddress
+
+
+
+scapy
+manuf
+requests

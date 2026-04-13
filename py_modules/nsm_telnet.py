@@ -17,6 +17,10 @@ from telnetlib3 import Telnet
 import asyncio
 
 
+# NSM IMPORTS
+from nsm_vars import Variables
+
+
 class Telnet_Brute_Forcer():
     """This will be used to bruteforce telnet"""
 
@@ -146,7 +150,9 @@ class Telnet_Brute_Forcer():
     def main(cls):
         """Begin class"""
 
-        
+        if not Variables.telnet:
+            return
+
         console.print("\n[bold green]  ===  Telnet Bruteforcer  ===\n")
         host, port = Telnet_Brute_Forcer._who()
         asyncio.run(Telnet_Brute_Forcer._brute_forcer(host=host, port=23))

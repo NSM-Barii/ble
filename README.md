@@ -14,16 +14,19 @@ A comprehensive toolkit for security testing and vulnerability research on IoT d
   - Connection spam attacks
   - Fuzzing with customizable payloads
 
-- **WiFi Analysis**
-  - Wireless reconnaissance
-  - Packet analysis
+- **WiFi Attacks**
+  - SSID scanning and enumeration
+  - Client discovery from specific SSIDs
+  - Deauthentication attacks
+  - Beacon flooding with fake APs
+  - Evil twin / captive portal attacks
+  - WiFi wardriving mode
 
-- **Hardware Protocols**
+- **Network Security**
+  - Telnet bruteforce attacks
+
+- **Hardware Protocols** *(Coming Soon)*
   - UART interface testing
-
-- **Mobile Security**
-  - Rooted Android integration (Magisk)
-  - Frida runtime instrumentation
 
 ---
 
@@ -40,12 +43,19 @@ cd framework/py_modules
 python3 -m venv venv
 source venv/bin/activate
 
-# Install BlueZ driver (Linux only)
+# Install BlueZ driver (for BLE - Linux only)
 # Ubuntu/Debian:
 sudo apt-get install bluez bluez-tools libbluetooth-dev
 
 # Arch Linux:
 sudo pacman -S bluez bluez-utils
+
+# Install WiFi tools (for monitor mode)
+# Ubuntu/Debian:
+sudo apt-get install aircrack-ng
+
+# Arch Linux:
+sudo pacman -S aircrack-ng
 
 # Install Python dependencies
 pip install -r requirements.txt
@@ -54,8 +64,11 @@ pip install -r requirements.txt
 ### Running the Framework
 
 ```bash
-# Must run with sudo for BLE access
+# Must run with sudo for BLE/WiFi access
 sudo venv/bin/python3 main.py
+
+# View help menu
+sudo venv/bin/python3 main.py -h
 ```
 
 ---
@@ -65,36 +78,86 @@ sudo venv/bin/python3 main.py
 Run the framework without arguments to see the help menu:
 
 ```bash
-sudo venv/bin/python3 main.py
+sudo venv/bin/python3 main.py -h
 ```
 
-### Common Commands
+### Command Structure
+
+All commands use a **prefix system** to organize modules:
+- **`-b*`** = BLE operations
+- **`-w*`** = WiFi operations
+- **Generic flags**: `-t`, `-m`, `-i`, `--channel`
+
+---
+
+### BLE Commands
 
 **BLE Scanning:**
 ```bash
-sudo venv/bin/python3 main.py -s              # Basic BLE scan
-sudo venv/bin/python3 main.py -sv             # Scan with vendor lookup
-sudo venv/bin/python3 main.py -t 20           # Set scan timeout (seconds)
+sudo venv/bin/python3 main.py -bs              # Basic BLE scan
+sudo venv/bin/python3 main.py -bsv -t 20      # Scan with vendor lookup, 20s timeout
 ```
 
 **BLE Wardriving:**
 ```bash
-sudo venv/bin/python3 main.py -w              # Wardriving mode
-sudo venv/bin/python3 main.py -wv             # Wardriving with verbose output
+sudo venv/bin/python3 main.py -bw             # Wardriving mode
+sudo venv/bin/python3 main.py -bwv            # Wardriving with verbose output
 ```
 
 **BLE Exploitation:**
 ```bash
-sudo venv/bin/python3 main.py -m <MAC> -d     # Dump GATT services
-sudo venv/bin/python3 main.py -m <MAC> -c     # Connection spam
-sudo venv/bin/python3 main.py -m <MAC> -cp    # Connection + pairing spam
-sudo venv/bin/python3 main.py -m <MAC> -f     # Fuzz all characteristics
+sudo venv/bin/python3 main.py -bd -m <MAC>    # Dump GATT services
+sudo venv/bin/python3 main.py -bc -m <MAC>    # Connection spam
+sudo venv/bin/python3 main.py -bcp -m <MAC>   # Connection + pairing spam
+sudo venv/bin/python3 main.py -bf -m <MAC>    # Fuzz all characteristics
 ```
 
-**Advanced Fuzzing:**
+**Advanced BLE Fuzzing:**
 ```bash
-sudo venv/bin/python3 main.py -m <MAC> -ft <UUID> --send write --response 1
+sudo venv/bin/python3 main.py -bft <UUID> -m <MAC> --send write --response 1
 ```
+
+---
+
+### WiFi Commands
+
+**WiFi Scanning:**
+```bash
+sudo venv/bin/python3 main.py -ws -i wlan0    # SSID scan on wlan0
+sudo venv/bin/python3 main.py -ws --channel 11 # SSID scan on channel 11
+```
+
+**WiFi Client Discovery:**
+```bash
+sudo venv/bin/python3 main.py -wc <BSSID> -i wlan0  # Sniff clients from specific AP
+```
+
+**WiFi Deauth Attack:**
+```bash
+sudo venv/bin/python3 main.py -wd <BSSID> --channel 6  # Deauth all clients
+sudo venv/bin/python3 main.py -wd <BSSID> --dst <CLIENT_MAC>  # Deauth specific client
+sudo venv/bin/python3 main.py -wd <BSSID> --reasons 1,6,7  # Custom reason codes
+```
+
+**WiFi Beacon Flood:**
+```bash
+sudo venv/bin/python3 main.py -wb 1 --channel 6  # Beacon flood (portal choice 1-3)
+```
+
+**WiFi Evil Twin:**
+```bash
+sudo venv/bin/python3 main.py -we 5 --channel 6  # Evil twin (portal 1-20)
+```
+
+**WiFi Wardriving:**
+```bash
+sudo venv/bin/python3 main.py -ww -i wlan0      # Wardrive mode (APs only)
+sudo venv/bin/python3 main.py -ww --mode 2      # Wardrive mode (clients + non-beacon)
+```
+
+---
+
+### Other Commands
 
 **Telnet Bruteforce:**
 ```bash
@@ -103,15 +166,36 @@ sudo venv/bin/python3 main.py --telnet
 
 ---
 
+### Generic Options
+
+```bash
+-t <seconds>      # Scan timeout (default: 10)
+-m <MAC>          # Target MAC address
+-i, --iface       # Network interface (default: wlan1)
+--channel <n>     # WiFi channel (default: 6)
+--mode <1|2>      # Wardrive mode: 1=APs only, 2=clients+non-beacon
+--dst <MAC>       # Deauth destination MAC (default: broadcast)
+--inter <float>   # Packet send interval
+--loop <n>        # Packet send loop count
+--count <n>       # Number of packets to send
+--realtime        # Enable realtime packet sending
+--reasons <codes> # Deauth reason codes (comma-separated, default: 4,5,7,15)
+```
+
+---
+
 ## Project Structure
 
 ```
-ble/
+framework/
 ├── py_modules/
 │   ├── main.py              # Main entry point
-│   ├── nsm_ble.py           # BLE modules
-│   └── nsm_telnet.py        # Telnet bruteforce
-├── root_pixel7a/            # Android rooting guides
+│   ├── nsm_vars.py          # Centralized configuration
+│   ├── nsm_ble.py           # BLE exploitation modules
+│   ├── nsm_wifi.py          # WiFi attack modules
+│   ├── nsm_telnet.py        # Telnet bruteforce
+│   ├── nsm_database.py      # Database operations
+│   └── requirements.txt     # Python dependencies
 └── README.md
 ```
 
@@ -119,10 +203,16 @@ ble/
 
 ## Requirements
 
-- Linux (Ubuntu/Debian/Arch)
-- Python 3.x
+### Hardware
+- Linux (Ubuntu/Debian/Arch recommended)
 - Bluetooth adapter (for BLE testing)
-- Root access on Android device (for mobile features)
+- WiFi adapter with monitor mode support (for WiFi attacks)
+
+### Software
+- Python 3.8+
+- BlueZ drivers (for BLE)
+- aircrack-ng (for WiFi monitor mode)
+- Root/sudo access (required for low-level network operations)
 
 ---
 
