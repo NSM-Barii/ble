@@ -73,6 +73,24 @@ sudo venv/bin/python3 main.py -h
 
 ---
 
+## Dependencies
+
+### Evil Twin Attack
+
+The Evil Twin module requires `hostapd` and `dnsmasq` for creating fake access points and captive portals.
+
+**Debian/Ubuntu:**
+```bash
+sudo apt update && sudo apt install hostapd dnsmasq -y
+```
+
+**Arch Linux:**
+```bash
+sudo pacman -Syu && sudo pacman -S hostapd dnsmasq
+```
+
+---
+
 ## Usage
 
 Run the framework without arguments to see the help menu:
@@ -197,24 +215,6 @@ framework/
 │   ├── nsm_database.py      # Database operations
 │   └── requirements.txt     # Python dependencies
 └── README.md
-```
-
----
-
-## Dependencies
-
-### Evil Twin Attack
-
-The Evil Twin module requires `hostapd` and `dnsmasq` for creating fake access points and captive portals.
-
-**Debian/Ubuntu:**
-```bash
-sudo apt update && sudo apt install hostapd dnsmasq -y
-```
-
-**Arch Linux:**
-```bash
-sudo pacman -Syu && sudo pacman -S hostapd dnsmasq
 ```
 
 ---
