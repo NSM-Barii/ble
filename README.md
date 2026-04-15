@@ -57,6 +57,13 @@ sudo apt-get install aircrack-ng
 # Arch Linux:
 sudo pacman -S aircrack-ng
 
+# Install Evil Twin dependencies (hostapd & dnsmasq)
+# Ubuntu/Debian:
+sudo apt update && sudo apt install hostapd dnsmasq -y
+
+# Arch Linux:
+sudo pacman -Syu && sudo pacman -S hostapd dnsmasq
+
 # Install Python dependencies
 pip install -r requirements.txt
 ```
