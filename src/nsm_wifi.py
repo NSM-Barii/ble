@@ -101,16 +101,12 @@ class SSID_Sniffer():
     def sniffer(cls, iface, table, timeout=15, verbose=0):
         """This will sniff for ssids"""
 
+        console.print(f"\n[bold yellow][!] SSID Sniff starting...\n")
 
-
-        while len(cls.ssids) < 1:
-
-            console.print(f"\n[bold yellow][!] SSID Sniff starting...\n")
+        with Live(table, console=console, refresh_per_second=2):
             sniff(iface=iface, store=0, timeout=timeout, prn=lambda pkt: SSID_Sniffer._packet_parser(pkt, table))
 
-        
-        console.print(table)
-        console.print(f"[bold green][+] Found:[yellow] {cls.ssids} SSIDs")
+        console.print(f"[bold green][+] Found:[yellow] {len(cls.ssids)} SSIDs")
 
 
     @staticmethod
