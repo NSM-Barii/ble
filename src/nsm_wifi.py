@@ -128,7 +128,8 @@ class SSID_Sniffer():
         table.add_column("Frequency")
         table.add_column("Channel")
 
-
+        
+        Background_Threads.channel_hopper()
 
         SSID_Sniffer.sniffer(iface=iface, table=table, timeout=timeout)
 
