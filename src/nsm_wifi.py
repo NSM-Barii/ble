@@ -93,7 +93,8 @@ class SSID_Sniffer():
 
                         table.add_row(f"{cls.num}", f"{rssi}", f"{ssid}", f"{addr2}", f"{vendor}", f"{encryption}", f"{frequency}", f"{channel}")
             
-
+        
+        print("hii")
         threading.Thread(target=parser, args=(pkt, ), daemon=True).start()
             
 

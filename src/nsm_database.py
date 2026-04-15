@@ -16,7 +16,7 @@ from scapy.layers.dot11 import Dot11, Dot11Beacon, Dot11Elt, Dot11Deauth, Dot11P
 
 
 # IMPORTS
-import manuf, json, os, threading, time, subprocess
+import manuf, json, os, threading, time, subprocess, socket
 from pathlib import Path
 from mac_vendor_lookup import MacLookup #vendors = MacLookup().load_vendors()
 
@@ -37,13 +37,14 @@ class DataBase():
 
 
 
-    database = Path(__file__).parent.parent / "database" / "bluetooth_sig" / "assigned_numbers" / "company_identifiers"
-    company_ids_path = database / "company_ids.json"
 
-
-
+    
     class Bluetooth():
         """This will house Bluetooth/BLE methods"""
+
+
+        database = Path(__file__).parent.parent / "database" / "bluetooth_sig" / "assigned_numbers" / "company_identifiers"
+        company_ids_path = database / "company_ids.json"
 
 
         @staticmethod
@@ -219,7 +220,7 @@ class DataBase():
         def _get_etc(cls, data: any, verbose=False) -> str:
             """etc --> model"""
 
-            mapping = DataBase._etcs()
+            mapping = DataBase.Bluetooth._etcs()
 
             for key, value in mapping.items():
 
@@ -240,10 +241,10 @@ class DataBase():
 
             data = {}
             for key, value in manufacturer_hex.items():
-                id = key; data = DataBase._get_etc(data=value.hex()) or value.hex()
+                id = key; data = DataBase.Bluetooth._get_etc(data=value.hex()) or value.hex()
                 
 
-            company_ids = DataBase._importer(file_path=cls.company_ids_path, verbose=False)
+            company_ids = DataBase.Bluetooth._importer(file_path=cls.company_ids_path, verbose=False)
 
 
             for key, value in company_ids.items():
@@ -558,6 +559,38 @@ class DataBase():
                 except Exception: pass
             
             return None
+        
+
+
+        @staticmethod
+        def monitor_mode(iface):
+            """This will automate changing device to monitor mode"""
+
+            
+            if not iface: return False
+
+
+            cmd = f"sudo ip link set {iface} down; sudo iw dev {iface} set type monitor; sudo ip link set {iface} up; iwconfig"
+            
+
+
+            subprocess.run(
+                ["sudo", "ip", "link", "set", f"{iface}", "down"],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+            subprocess.run(
+                ["sudo", "iw", "dev", f"{iface}", "set", "type", "monitor"],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+            subprocess.run(
+                ["sudo", "ip", "link", "set", f"{iface}", "up"],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+
+            subprocess.run(["iwconfig"])
             
 
 

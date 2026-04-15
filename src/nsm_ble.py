@@ -1,4 +1,4 @@
-# TEST MODULE WILL BE STARTING BLE FRAMEWORK FROM HERE
+    # TEST MODULE WILL BE STARTING BLE FRAMEWORK FROM HERE
  
 
 # UI IMPORTS
@@ -80,11 +80,11 @@ class BLE_Sniffer():
 
 
             with Live(table, console=console, refresh_per_second=4):
-                while time.time() - time_start < timeout:
+                while time.time() - time_start < int(timeout):
                     
 
                     await scanner.start()
-                    await asyncio.sleep(5)
+                    await asyncio.sleep(2)
                     await scanner.stop()
                     devices = scanner.discovered_devices_and_advertisement_data
 

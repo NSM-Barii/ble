@@ -16,7 +16,7 @@ from nsm_vars import Variables
 from nsm_ble import BLE_Enumerater, BLE_Sniffer, BLE_Fuzzer, BLE_Connection_Spam
 from nsm_wifi import SSID_Sniffer, Client_Sniffer, Deauth_Attacker, Evil_Twin, Beacon_Flooder, War_Driving
 from nsm_telnet import Telnet_Brute_Forcer
-
+from nsm_database import DataBase
 
 # CONSTANTS
 console = Variables.console
@@ -79,6 +79,8 @@ class Main_Menu():
         parser.add_argument("-wb", help="WiFi beacon flood (provide portal choice 1-3)")
         parser.add_argument("-we", help="WiFi evil twin attack (provide portal number 1-20)")
         parser.add_argument("-ww", action="store_true", help="WiFi wardriving mode")
+
+        parser.add_argument("-mm", help="Change iface to monitor mode")
 
         parser.add_argument("--channel", type=int, help="WiFi channel (default: 6)")
         parser.add_argument("--mode", type=int, help="Wardrive mode: 1=APs only, 2=clients+non-beacon (default: 1)")
@@ -189,7 +191,8 @@ class Main_Menu():
         # OTHER FLAGS
         # ============
         if args.telnet: Variables.telnet = True
-
+        
+        if args.mm: DataBase.WiFi.monitor_mode(iface=args.mm)
 
         BLE_Sniffer.main();  BLE_Enumerater.main(); BLE_Fuzzer.main(); BLE_Connection_Spam.main()
         SSID_Sniffer.main(); Client_Sniffer.main(); Deauth_Attacker.main(); Beacon_Flooder.main(); Evil_Twin.main(); War_Driving.main()
