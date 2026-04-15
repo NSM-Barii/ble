@@ -106,7 +106,7 @@ class SSID_Sniffer():
         while len(cls.ssids) < 1:
 
             console.print(f"\n[bold yellow][!] SSID Sniff starting...\n")
-            sniff(iface, store=0, timeout=timeout,  prn=lambda pkt: SSID_Sniffer._packet_parser(pkt, table))
+            sniff(iface=iface, store=0, timeout=timeout, prn=lambda pkt: SSID_Sniffer._packet_parser(pkt, table))
 
         
         console.print(table)
