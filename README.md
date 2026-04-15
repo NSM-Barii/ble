@@ -43,20 +43,6 @@ cd framework/py_modules
 python3 -m venv venv
 source venv/bin/activate
 
-# Install BlueZ driver (for BLE - Linux only)
-# Ubuntu/Debian:
-sudo apt-get install bluez bluez-tools libbluetooth-dev
-
-# Arch Linux:
-sudo pacman -S bluez bluez-utils
-
-# Install WiFi tools (for monitor mode)
-# Ubuntu/Debian:
-sudo apt-get install aircrack-ng
-
-# Arch Linux:
-sudo pacman -S aircrack-ng
-
 # Install Python dependencies
 pip install -r requirements.txt
 ```
@@ -74,6 +60,20 @@ sudo venv/bin/python3 main.py -h
 ---
 
 ## Dependencies
+
+### BLE Modules
+
+The BLE modules require BlueZ drivers for Bluetooth Low Energy support.
+
+**Debian/Ubuntu:**
+```bash
+sudo apt-get install bluez bluez-tools libbluetooth-dev
+```
+
+**Arch Linux:**
+```bash
+sudo pacman -S bluez bluez-utils
+```
 
 ### Evil Twin Attack
 
@@ -228,8 +228,8 @@ framework/
 
 ### Software
 - Python 3.8+
-- BlueZ drivers (for BLE)
-- aircrack-ng (for WiFi monitor mode)
+- BlueZ drivers (for BLE - see Dependencies)
+- hostapd & dnsmasq (for Evil Twin - see Dependencies)
 - Root/sudo access (required for low-level network operations)
 
 ---
