@@ -484,6 +484,11 @@ class DataBase():
         def get_frequency(freq):
             """This will return frequency"""
 
+            try:
+                freq = int(freq)
+            except (ValueError, TypeError):
+                return "Unknown"
+
             if freq in range(2412, 2472): return "2.4 GHz"
             elif freq in range(5180, 5825): return "5 GHz"
             else: return "6 GHz"
