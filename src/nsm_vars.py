@@ -75,7 +75,6 @@ class Variables():
     
 
 
-
     # TELNET
     telnet   = False
 

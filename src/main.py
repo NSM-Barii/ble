@@ -121,7 +121,7 @@ class Main_Menu():
         Variables.mac       = args.m
         Variables.iface     = args.iface or "wlan1"
         Variables.channel   = args.channel or 6
-        Variables.hop_delay = args.hop_delay
+        Variables.hop_delay = args.hop_delay or 0.25
         Variables.mode      = args.mode or 1
         Variables.mac_dst   = args.dst or "ff:ff:ff:ff:ff:ff"
         Variables.inter     = args.inter
@@ -130,8 +130,7 @@ class Main_Menu():
         Variables.realtime  = args.realtime
 
         if args.reasons:  Variables.reasons = [int(r.strip()) for r in args.reasons.split(',')]
-        else:             Variables.reasons = [4, 5, 7, 15]
-
+        else:             Variables.reasons = [4, 5, 7, 15] 
 
         # ============
         #  BLE FLAGS
