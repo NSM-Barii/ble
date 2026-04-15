@@ -489,9 +489,11 @@ class DataBase():
             except (ValueError, TypeError):
                 return "Unknown"
 
-            if freq in range(2412, 2472): return "2.4 GHz"
-            elif freq in range(5180, 5825): return "5 GHz"
-            else: return "6 GHz"
+            # Frequency values from RadioTap.ChannelFrequency are in kHz
+            if freq in range(2400000, 2500000): return "2.4 GHz"
+            elif freq in range(5000000, 5800000): return "5 GHz"
+            elif freq in range(5900000, 7200000): return "6 GHz"
+            else: return str(freq)
 
 
         @staticmethod
