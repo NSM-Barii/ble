@@ -200,7 +200,8 @@ class Main_Menu():
         Telnet_Brute_Forcer.main()
 
 
-Main_Menu.main()
+
+if __name__ == "__main__": Main_Menu.main()
 
 
 
@@ -208,3 +209,15 @@ Main_Menu.main()
 
 
 
+WARNING: Socket <scapy.arch.linux.L2ListenSocket object at 0x7f766636fc50> failed with ''<' not supported between instances of 'int' and 'str''. It was closed.
+
+[!] SSID Sniff starting...
+
+hii
+WARNING: more Socket <scapy.arch.linux.L2ListenSocket object at 0x7f766636fed0> failed with ''<' not supported between instances of 'int' and 'str''. It was closed.
+
+[!] SSID Sniff starting...
+
+hii
+
+[!] SSID Sniff starting...
