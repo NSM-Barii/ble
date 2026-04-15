@@ -83,6 +83,7 @@ class Main_Menu():
         parser.add_argument("-mm", help="Change iface to monitor mode")
 
         parser.add_argument("--channel", type=int, help="WiFi channel (default: 6)")
+        parser.add_argument("--hop-delay", type=float, help="delay between hopping channels")
         parser.add_argument("--mode", type=int, help="Wardrive mode: 1=APs only, 2=clients+non-beacon (default: 1)")
         parser.add_argument("--dst", help="Deauth destination MAC (default: ff:ff:ff:ff:ff:ff)")
         parser.add_argument("--inter", type=float, help="Packet send interval")
@@ -120,6 +121,7 @@ class Main_Menu():
         Variables.mac       = args.m
         Variables.iface     = args.iface or "wlan1"
         Variables.channel   = args.channel or 6
+        Variables.hop_delay = args.hop_delay
         Variables.mode      = args.mode or 1
         Variables.mac_dst   = args.dst or "ff:ff:ff:ff:ff:ff"
         Variables.inter     = args.inter

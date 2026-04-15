@@ -97,6 +97,7 @@ class Variables():
     # DEFAULT
     timeout = 15
     channel = 6 # OR 6
+    hop_delay = 0.25
 
     # WAR DRIVING
     mode = 1 # AP's ONLY == 1 else 2 == FOR CLIENTS AND NON BEACON FRAMES

@@ -43,6 +43,7 @@ class SSID_Sniffer():
     """This will be responsible for only sniffing for ssids // Remastered <-- Frame_Snatcher"""
 
     
+    hidden = 1
     ssids = []
     macs  = []
     num = 0
@@ -68,8 +69,10 @@ class SSID_Sniffer():
             # THIS IS STRICTLY USED TO CAPTURE BEACON FRAMES // SENT FROM AP'S
             if pkt.haslayer(Dot11Beacon):
                
-
-                ssid = pkt[Dot11Elt].info.decode(errors="ignore") if pkt[Dot11Elt].info.decode(errors="ignore") else "Missing SSID"
+                
+                with LOCK:
+                    ssid = pkt[Dot11Elt].info.decode(errors="ignore") if pkt[Dot11Elt].info.decode(errors="ignore") else f"Hidden SSID #{cls.hidden}"
+                    if ssid.startswith("Hidden SSID"):  cls.hidden += 1
                 addr1 = str(pkt[Dot11].addr1) if pkt[Dot11].addr1 != "ff:ff:ff:ff:ff:ff" else False
                 addr2 = str(pkt[Dot11].addr2) if pkt[Dot11].addr2 != "ff:ff:ff:ff:ff:ff" else False
                 
@@ -102,12 +105,14 @@ class SSID_Sniffer():
         """This will sniff for ssids"""
 
         console.print(f"\n[bold yellow][!] SSID Sniff starting...\n")
+        
+        try:
+            with Live(table, console=console, refresh_per_second=2):
+                sniff(iface=iface, store=0, timeout=timeout, prn=lambda pkt: SSID_Sniffer._packet_parser(pkt, table))
 
-        with Live(table, console=console, refresh_per_second=2):
-            sniff(iface=iface, store=0, timeout=timeout, prn=lambda pkt: SSID_Sniffer._packet_parser(pkt, table))
-
-        console.print(f"[bold green][+] Found:[yellow] {len(cls.ssids)} SSIDs")
-
+            console.print(f"\n[bold green][+] Found:[yellow] {len(cls.ssids)} SSIDs")
+        
+        except Exception as e: console.print(f"[bold red]Error:[bold yellow] {e}")
 
     @staticmethod
     def main():
@@ -119,7 +124,7 @@ class SSID_Sniffer():
         timeout = Variables.timeout
         table   = Variables.table
 
-        table.add_column("Key", style="bold red")
+        table.add_column("Key", style="white")
         table.add_column("RSSI", style="red")
         table.add_column("SSID", style="bold blue")
         table.add_column("Mac", style="bold green")
@@ -329,7 +334,7 @@ class Beacon_Flooder():
             "Barii_Hacking_You",
             "LAN_of_the_Free",
             "WuTangLAN",
-            "C:\Virus.exe",
+            "C:\\Virus.exe",
             "Give_Us_Your_Data",
             "Pay4WiFi_Loser",
             "Open_AP_Honeypot",

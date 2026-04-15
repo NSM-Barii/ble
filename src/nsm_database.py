@@ -627,10 +627,11 @@ class Background_Threads:
 
         def hopper():
 
-            delay = 0.25
+           
             all_hops = [1, 6, 11, 36, 40, 44, 48, 149, 153, 157, 161]
             
             iface = Variables.iface
+            delay = Variables.hop_delay
 
 
             # TUNE HOP
@@ -679,16 +680,12 @@ class Background_Threads:
                             start_new_session=True,
                         )
                         cls.channel = channel
-                        if verbose:
-                            console.print(
-                                f"[bold green]Hopping on Channel:[bold yellow] {channel}"
-                            )
+                        if verbose: console.print(f"[bold green]Hopping on Channel:[bold yellow] {channel}")
 
                         # DELAY
                         time.sleep(delay)
 
-                    except Exception as e:
-                        console.print(f"[bold red]Exception Error:[bold yellow] {e}")
+                    except Exception as e: console.print(f"[bold red]Exception Error:[bold yellow] {e}")
 
         threading.Thread(target=hopper, args=(), daemon=True).start()
         cls.hop = True
