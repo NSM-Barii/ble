@@ -78,7 +78,7 @@ class SSID_Sniffer():
                 channel = DataBase.get_channel(pkt=pkt)
                 rssi = DataBase.get_rssi(pkt=pkt)
                 encryption = DataBase.get_encryption(pkt=pkt)
-                frequency = DataBase.get_frequency(freq=pkt[RadioTap].ChannelFrequency)
+                frequency = DataBase.get_frequency(pkt=pkt)
 
 
 
@@ -92,9 +92,8 @@ class SSID_Sniffer():
                         cls.num += 1
 
                         table.add_row(f"{cls.num}", f"{rssi}", f"{ssid}", f"{addr2}", f"{vendor}", f"{encryption}", f"{frequency}", f"{channel}")
-            
-        
-        print("hii")
+
+
         threading.Thread(target=parser, args=(pkt, ), daemon=True).start()
             
 

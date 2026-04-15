@@ -481,19 +481,27 @@ class DataBase():
         #  WiFi pkt Parsing
         # ===============
         @staticmethod
-        def get_frequency(freq):
-            """This will return frequency"""
+        def get_frequency(pkt):
+            """This will return frequency from RadioTap layer"""
 
-            try:
-                freq = int(freq)
-            except (ValueError, TypeError):
+            if not pkt.haslayer(RadioTap):
                 return "Unknown"
 
-            # Frequency values from RadioTap.ChannelFrequency are in kHz
-            if freq in range(2400000, 2500000): return "2.4 GHz"
-            elif freq in range(5000000, 5800000): return "5 GHz"
-            elif freq in range(5900000, 7200000): return "6 GHz"
-            else: return str(freq)
+            try:
+                freq = pkt[RadioTap].ChannelFrequency
+                if not freq:
+                    return "Unknown"
+
+                freq = int(freq)
+
+                # Frequency values from RadioTap.ChannelFrequency are in MHz
+                if freq in range(2412, 2484): return "2.4 GHz"
+                elif freq in range(5180, 5825): return "5 GHz"
+                elif freq in range(5925, 7125): return "6 GHz"
+                else: return "Unknown"
+
+            except (ValueError, TypeError, AttributeError):
+                return "Unknown"
 
 
         @staticmethod
