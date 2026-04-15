@@ -57,13 +57,6 @@ sudo apt-get install aircrack-ng
 # Arch Linux:
 sudo pacman -S aircrack-ng
 
-# Install Evil Twin dependencies (hostapd & dnsmasq)
-# Ubuntu/Debian:
-sudo apt update && sudo apt install hostapd dnsmasq -y
-
-# Arch Linux:
-sudo pacman -Syu && sudo pacman -S hostapd dnsmasq
-
 # Install Python dependencies
 pip install -r requirements.txt
 ```
@@ -204,6 +197,24 @@ framework/
 │   ├── nsm_database.py      # Database operations
 │   └── requirements.txt     # Python dependencies
 └── README.md
+```
+
+---
+
+## Dependencies
+
+### Evil Twin Attack
+
+The Evil Twin module requires `hostapd` and `dnsmasq` for creating fake access points and captive portals.
+
+**Debian/Ubuntu:**
+```bash
+sudo apt update && sudo apt install hostapd dnsmasq -y
+```
+
+**Arch Linux:**
+```bash
+sudo pacman -Syu && sudo pacman -S hostapd dnsmasq
 ```
 
 ---
