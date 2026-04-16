@@ -85,6 +85,7 @@ class Main_Menu():
         parser.add_argument("--channel", type=int, help="WiFi channel (default: 6)")
         parser.add_argument("--hop-delay", type=float, help="delay between hopping channels")
         parser.add_argument("--mode", type=int, help="Wardrive mode: 1=APs only, 2=clients+non-beacon (default: 1)")
+        parser.add_argument("--src", help="Deauth source")
         parser.add_argument("--dst", help="Deauth destination MAC (default: ff:ff:ff:ff:ff:ff)")
         parser.add_argument("--inter", type=float, help="Packet send interval")
         parser.add_argument("--loop", type=int, help="Packet send loop count")
@@ -114,7 +115,11 @@ class Main_Menu():
             console.print(panel)
             parser.print_help()
             exit()
+        
 
+        # DEAUTH ATTACK
+        Variables.mac_dst   = args.dst or "ff:ff:ff:ff:ff:ff"
+        Variables.mac_src   = args.src or False
 
         # GENERIC CONFIG
         Variables.timeout   = args.t
@@ -122,8 +127,7 @@ class Main_Menu():
         Variables.iface     = args.iface or "wlan1"
         Variables.channel   = args.channel or 6
         Variables.hop_delay = args.hop_delay or 0.25
-        Variables.mode      = args.mode or 1
-        Variables.mac_dst   = args.dst or "ff:ff:ff:ff:ff:ff"
+        Variables.mode      = args.mode or 1        
         Variables.inter     = args.inter
         Variables.loop      = args.loop
         Variables.count     = args.count
