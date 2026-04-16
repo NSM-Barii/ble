@@ -13,3 +13,4 @@ ipaddress
 scapy
 manuf
 requests
+pyfiglet

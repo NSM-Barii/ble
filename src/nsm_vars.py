@@ -110,10 +110,10 @@ class Variables():
     mac_dst    = None
     mac_client = None  # SINGLE CLIENT DEAUTH
 
-    inter    = None
-    loop     = None
-    count    = None
-    realtime = None
+    inter    = 0
+    loop     = 0
+    count    = 1
+    realtime = False
 
     reasons = [4,5,7,15]
 

