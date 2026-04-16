@@ -107,7 +107,7 @@ class Variables():
 
     # DEAUTH // CLIENT SNIFFER
     mac_src    = None
-    mac_dst    = None
+    mac_dst    = "ff:ff:ff:ff:ff:ff"
     mac_client = None  # SINGLE CLIENT DEAUTH
 
     inter    = 0

