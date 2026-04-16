@@ -44,6 +44,7 @@ class Variables():
     wifi_beacon_flood   = False
     wifi_evil_twin      = False
     wifi_war_driving    = False
+    wifi_ping_me        = False
 
     
     # ==============
