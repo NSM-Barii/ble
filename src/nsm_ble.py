@@ -149,11 +149,8 @@ class BLE_Sniffer():
             console.print(f"\n[bold green][+] Found a total of:[bold yellow] {len(cls.devices)} devices")
 
 
-        except KeyboardInterrupt:  
-            return KeyboardInterrupt
-
-        except Exception as e: 
-            console.print(f"[bold red]Sniffer Exception Error:[bold yellow] {e}") 
+        except KeyboardInterrupt:   return KeyboardInterrupt
+        except Exception as e:  console.print(f"[bold red]Sniffer Exception Error:[bold yellow] {e}") 
 
 
     @classmethod
@@ -176,7 +173,7 @@ class BLE_Sniffer():
             
             
             #if scan or vendor_lookup: from nsm_server import Web_Server; threading.Thread(target=Web_Server.start, args=(console, ), daemon=True).start(); time.sleep(1)
-            asyncio.run(BLE_Sniffer._ble_printer(scan=scan, timeout=timeout, vendor_lookup=vendor_lookup))
+            asyncio.run(BLE_Sniffer._ble_printer(scan=scan or vendor_lookup, timeout=timeout, vendor_lookup=vendor_lookup))
             #threading.Thread(target=asyncio.run(BLE_Sniffer._ble_printer), args=(timeout, vendor_lookup, war_drive, print), daemon=True).start()
         
         

@@ -331,9 +331,9 @@ class DataBase():
             """This will use ringmast4r and wireshark vendor database"""
 
 
-            vendor = DataBase._get_vendor(mac=mac, verbose=verbose) or False; c = 1
+            vendor = DataBase.Bluetooth._get_vendor(mac=mac, verbose=verbose) or False; c = 1
 
-            if not vendor: vendor = DataBase._get_vendor_new(mac=mac, verbose=verbose) or False; c = 2 
+            if not vendor: vendor = DataBase.Bluetooth._get_vendor_new(mac=mac, verbose=verbose) or False; c = 2 
 
             return vendor
         
@@ -656,8 +656,10 @@ class Background_Threads:
                         start_new_session=True,
                     )
 
-                except Exception as e:
-                    console.print(f"[bold red]Exception Error:[bold yellow] {e}")
+                except Exception as e:console.print(f"[bold red]Exception Error:[bold yellow] {e}")
+
+                
+                return True
 
             # AUTO HOPPING
             while cls.hop:

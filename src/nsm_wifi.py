@@ -309,6 +309,8 @@ class Deauth_Attacker():
         reasons = Variables.reasons
         
         verbose = Variables.verbose
+
+        console.print(f"{mac_src} --> {mac_dst}")
         
 
         Background_Threads.channel_hopper(set_channel=channel); console.print(channel)
