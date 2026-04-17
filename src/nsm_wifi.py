@@ -281,10 +281,11 @@ class Deauth_Attacker():
         """This will be responsible for sending deauth packets"""
 
 
-        while True: 
-            sendp(x=pkts, inter=inter, loop=loop, count=count, verbose=verbose, realtime=realtime, iface=iface); console.print(f"[bold green][+] Packets sent")
-            
-            if not inter and not loop: time.sleep(1)
+        while True:
+            for pkt in pkts:
+                sendp(pkt, iface=iface, verbose=verbose, count=count)
+                console.print(f"[bold green][+] Packet sent")
+                time.sleep(inter if inter else 0.1)
 
 
     @staticmethod
