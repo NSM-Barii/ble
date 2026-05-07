@@ -287,8 +287,10 @@ class Deauth_Attacker():
                 if addr1 == target or addr2 == target:
                     if addr1 != target and addr1 not in cls.clients and addr1:
                         cls.clients.append(addr1)
+                        console.log(f"[bold cyan][+] Client:[/bold cyan] {addr1}  -->  {target}")
                     elif addr2 != target and addr2 not in cls.clients and addr2:
                         cls.clients.append(addr2)
+                        console.log(f"[bold cyan][+] Client:[/bold cyan] {addr2}  -->  {target}")
 
         while cls.SNIFF:
             sniff(iface=iface, prn=parse, store=0, timeout=2)
