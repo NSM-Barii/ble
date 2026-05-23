@@ -83,7 +83,7 @@ class Variables():
     #  WiFi METHODS
     # ===============
     
-    iface     = "wlan1"  # FOR MONITOR MODE
+    iface     = "wlan0mon"  # FOR MONITOR MODE
     subnet    = "192.168.1.0/24"
     ip_router = "192.168.1.1"
     ip_local  = None
