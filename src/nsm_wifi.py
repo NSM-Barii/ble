@@ -171,30 +171,33 @@ class Client_Sniffer():
     def _packet_parser(cls, pkt, target, table):
         """This will parse packets"""
 
-        try:
+        def parse(pkt):
+            try:
 
-            if pkt.haslayer(Dot11):
+                if pkt.haslayer(Dot11):
 
-                addr1 = pkt.addr1 if pkt.addr1 != "ff:ff:ff:ff:ff:ff" else False
-                addr2 = pkt.addr2 if pkt.addr2 != "ff:ff:ff:ff:ff:ff" else False
+                    addr1 = pkt.addr1.lower() if pkt.addr1 and pkt.addr1 != "ff:ff:ff:ff:ff:ff" else False
+                    addr2 = pkt.addr2.lower() if pkt.addr2 and pkt.addr2 != "ff:ff:ff:ff:ff:ff" else False
 
-                if addr1 == target or addr2 == target:
+                    if addr1 == target or addr2 == target:
 
-                    if addr1 != target and addr1 not in cls.clients and addr1:
+                        if addr1 != target and addr1 not in cls.clients and addr1:
 
-                        vendor = DataBase.get_vendor_main(mac=addr1)
-                        cls.clients.append(addr1)
-                        table.add_row(f"{len(cls.clients)}", f"{addr1}", " --> ", f"{target}", f"{vendor}")
+                            vendor = DataBase.get_vendor_main(mac=addr1)
+                            cls.clients.append(addr1)
+                            table.add_row(f"{len(cls.clients)}", f"{addr1}", " --> ", f"{target}", f"{vendor}")
 
-                    elif addr2 != target and addr2 not in cls.clients and addr2:
+                        elif addr2 != target and addr2 not in cls.clients and addr2:
 
-                        vendor = DataBase.get_vendor_main(mac=addr2)
-                        cls.clients.append(addr2)
-                        table.add_row(f"{len(cls.clients)}", f"{addr2}", " --> ", f"{target}", f"{vendor}")
+                            vendor = DataBase.get_vendor_main(mac=addr2)
+                            cls.clients.append(addr2)
+                            table.add_row(f"{len(cls.clients)}", f"{addr2}", " --> ", f"{target}", f"{vendor}")
 
 
-        except KeyboardInterrupt as e: console.log(f"[bold red]YOU ESCAPED THE MATRIX:[yellow] {e}")
-        except Exception as e: console.log(f"[bold red]Exception Error:[yellow] {e}")
+            except KeyboardInterrupt as e: console.log(f"[bold red]YOU ESCAPED THE MATRIX:[yellow] {e}")
+            except Exception as e: console.log(f"[bold red]Exception Error:[yellow] {e}")
+
+        threading.Thread(target=parse, args=(pkt,), daemon=True).start()
 
 
     @classmethod
@@ -224,7 +227,7 @@ class Client_Sniffer():
         table      = Variables.table
         iface      = Variables.iface
         channel    = Variables.channel
-        mac_client = Variables.mac_client
+        mac_client = Variables.mac_client.lower()
         timeout    = Variables.timeout or 120
 
         table.title = (f"{mac_client} - Client list")

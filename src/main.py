@@ -17,6 +17,7 @@ from nsm_ble import BLE_Enumerater, BLE_Sniffer, BLE_Fuzzer, BLE_Connection_Spam
 from nsm_wifi import SSID_Sniffer, Client_Sniffer, Deauth_Attacker, Evil_Twin, Beacon_Flooder, War_Driving, You_Cant_DOS_ME
 from nsm_telnet import Telnet_Brute_Forcer
 from nsm_database import DataBase
+from nsm_flock import Flock_Spoofer
 
 # CONSTANTS
 console = Variables.console
@@ -80,6 +81,7 @@ class Main_Menu():
         parser.add_argument("-we", help="WiFi evil twin attack (provide portal number 1-20)")
         parser.add_argument("-ww", action="store_true", help="WiFi wardriving mode")
         parser.add_argument("-wp", action="store_true", help="Use this to test pinging of yourself to see if your online, meant to be defensive against offensive methods")
+        parser.add_argument("-fs", action="store_true", help="Spoof Flock camera probe requests (-i required)")
 
         parser.add_argument("-mm", help="Change iface to monitor mode")
 
@@ -196,6 +198,9 @@ class Main_Menu():
         if args.wp:
             Variables.wifi_ping_me        = True
 
+        if args.fs:
+            Variables.flock_spoof         = True
+
 
         # ============
         # OTHER FLAGS
@@ -206,6 +211,8 @@ class Main_Menu():
 
         BLE_Sniffer.main();  BLE_Enumerater.main(); BLE_Fuzzer.main(); BLE_Connection_Spam.main()
         SSID_Sniffer.main(); Client_Sniffer.main(); Deauth_Attacker.main(); Beacon_Flooder.main(); Evil_Twin.main(); War_Driving.main(); You_Cant_DOS_ME.main()
+
+        Flock_Spoofer.main()
 
         Telnet_Brute_Forcer.main()
 

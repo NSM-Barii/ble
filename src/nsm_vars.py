@@ -46,6 +46,9 @@ class Variables():
     wifi_war_driving    = False
     wifi_ping_me        = False
 
+    # Flock
+    flock_spoof         = False
+
     
     # ==============
     #  BLE METHODS
