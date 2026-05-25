@@ -100,7 +100,7 @@ class Main_Menu():
         # ==========================
         #   GENERIC // ALL MODULES
         # ==========================
-        parser.add_argument("-t", type=int, default=10, help="Scan timeout in seconds (default: 10)")
+        parser.add_argument("-t", type=float, default=10, help="Scan timeout / delay in seconds (default: 10)")
         parser.add_argument("-m", help="Target MAC address")
         parser.add_argument("-i", "--iface", help="Network interface (default: wlan1)")
         

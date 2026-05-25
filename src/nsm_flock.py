@@ -16,10 +16,12 @@ import time, random
 
 # NSM IMPORTS
 from nsm_vars import Variables
+from nsm_database import Background_Threads
 
 
 # CONSTANTS
 console = Variables.console
+panel   = Panel("Flock Spoofer", style="bold red", border_style="bold purple", expand=False)
 
 
 # FLOCK SIGNATURES
@@ -92,8 +94,8 @@ class Flock_Spoofer():
 
             while True:
 
-                mac  = cls._get_mac()
-                ssid = cls._get_ssid()
+                mac   = cls._get_mac()
+                ssid  = cls._get_ssid()
                 frame = cls._build_frame(mac=mac, ssid=ssid)
 
                 sendp(frame, iface=iface, count=count, inter=inter, verbose=False)
@@ -119,12 +121,14 @@ class Flock_Spoofer():
 
         if not Variables.flock_spoof: return
 
-        console.print(Panel("Flock Spoofer", style="bold red", border_style="bold purple"))
+        console.print(panel)
 
         iface = Variables.iface
         count = Variables.count
         inter = Variables.timeout or 0.1
 
         console.print(f"[bold green][+] Spoofing Flock cameras on [bold yellow]{iface}  [bold green]delay:[bold yellow] {inter}s")
+
+        Background_Threads.channel_hopper()
 
         cls._spoof(iface=iface, count=count, inter=inter)
