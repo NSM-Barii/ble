@@ -69,7 +69,7 @@ class Flock_Spoofer():
         """Build a probe request frame spoofing a Flock camera"""
 
         return (
-            RadioTap() /
+            RadioTap(present=0) /
             Dot11(type=0, subtype=4,
                   addr1="ff:ff:ff:ff:ff:ff",
                   addr2=mac,
@@ -109,8 +109,6 @@ class Flock_Spoofer():
                     f"  [{c3}]sent:[/{c3}] [{c2}]{sent}[/{c2}]"
                 )
 
-                time.sleep(inter)
-
         except KeyboardInterrupt: console.print(f"\n[bold red][-] Flock_Spoofer stopped — {sent} frames sent")
         except Exception as e:    console.print(f"[bold red]Exception Error:[bold yellow] {e}")
 
@@ -128,7 +126,5 @@ class Flock_Spoofer():
         inter = Variables.timeout or 0.1
 
         console.print(f"[bold green][+] Spoofing Flock cameras on [bold yellow]{iface}  [bold green]delay:[bold yellow] {inter}s")
-
-        Background_Threads.channel_hopper()
 
         cls._spoof(iface=iface, count=count, inter=inter)
